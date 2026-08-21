@@ -1,15 +1,15 @@
-using System;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Unity.Services.Authentication;
 using Unity.Services.Core;
 using UnityEngine;
 
+#if UNITY_EDITOR
+
+// Unity 6 Only
 #if HAS_MPPM
+using Unity.Multiplayer.Playmode;
 using UnityEngine.XR.Interaction.Toolkit.UI;
 #endif
-
-#if UNITY_EDITOR
 
 #if HAS_PARRELSYNC
 using ParrelSync;
@@ -33,30 +33,6 @@ namespace XRMultiplayer
         /// </summary>
         [SerializeField] bool m_UseCommandLineArgs = true;
 
-#if HAS_MPPM
-
-        const string k_MppmEditorName = "-name";
-        const string k_MppmCloneProcess = "--virtual-project-clone";
-
-        bool m_IsVirtualPlayer;
-
-        /// <summary>
-        /// The XRUIInputModule that is used to control the XRUI -- Cache this value and it with the MPPM virtual players.
-        /// </summary>
-        public XRUIInputModule inputModule
-        {
-            get
-            {
-                if (m_InputModule == null)
-                {
-                    m_InputModule = FindAnyObjectByType<XRUIInputModule>();
-                }
-                return m_InputModule;
-            }
-        }
-
-        XRUIInputModule m_InputModule;
-#endif
 
         /// <summary>
         /// Simple Authentication function. This uses bare bones authentication and anonymous sign in.
@@ -64,57 +40,47 @@ namespace XRMultiplayer
         /// <returns></returns>
         public virtual async Task<bool> Authenticate()
         {
-            try
+            // Check if UGS has not been initialized yet, and initialize.
+            if (UnityServices.State == ServicesInitializationState.Uninitialized)
             {
-                // Check if UGS has not been initialized yet, and initialize.
-                if (UnityServices.State == ServicesInitializationState.Uninitialized)
-                {
-                    var options = new InitializationOptions();
-                    string playerId = "Player";
-                    // Check for editor clones (MPPM or ParrelSync).
-                    // This allows for multiple instances of the editor to connect to UGS.
+                var options = new InitializationOptions();
+                string playerId = "Player";
+                // Check for editor clones (MPPM or ParrelSync).
+                // This allows for multiple instances of the editor to connect to UGS.
 #if UNITY_EDITOR
-                    playerId = "Editor";
+                playerId = "Editor";
 
 #if HAS_MPPM
-                    //Check for MPPM
-                    playerId += CheckMPPM();
+                //Check for MPPM
+                playerId += CheckMPPM();
 #elif HAS_PARRELSYNC
-                    // Check for ParrelSync
-                    playerId += CheckParrelSync();
+                // Check for ParrelSync
+                playerId += CheckParrelSync();
 #endif
 #endif
-                    // Check for command line args in builds
-                    if (!Application.isEditor && m_UseCommandLineArgs)
-                    {
-                        playerId += GetPlayerIDArg();
-                    }
-
-                    playerId = SanitizeString(playerId);
-
-                    Utils.Log($"{k_DebugPrepend}Signing in with profile {playerId}");
-                    options.SetProfile(playerId);
-
-                    // Initialize UGS using any options defined
-                    await UnityServices.InitializeAsync(options);
-                }
-
-                // If not already signed on then do so.
-                if (!AuthenticationService.Instance.IsAuthorized)
+                // Check for command line args in builds
+                if (!Application.isEditor && m_UseCommandLineArgs)
                 {
-                    // Signing in anonymously for simplicity sake.
-                    await AuthenticationService.Instance.SignInAnonymouslyAsync();
+                    playerId += GetPlayerIDArg();
                 }
 
-                // Cache PlayerId.
-                XRINetworkGameManager.AuthenicationId = AuthenticationService.Instance.PlayerId;
-                return UnityServices.State == ServicesInitializationState.Initialized;
+                options.SetProfile(playerId);
+                Utils.Log($"{k_DebugPrepend}Signing in with profile {playerId}");
+
+                // Initialize UGS using any options defined
+                await UnityServices.InitializeAsync(options);
             }
-            catch (System.Exception e)
+
+            // If not already signed on then do so.
+            if (!AuthenticationService.Instance.IsAuthorized)
             {
-                Utils.Log($"{k_DebugPrepend}Error during authentication: {e}");
-                return false;
+                // Signing in anonymously for simplicity sake.
+                await AuthenticationService.Instance.SignInAnonymouslyAsync();
             }
+
+            // Cache PlayerId.
+            XRINetworkGameManager.AuthenicationId = AuthenticationService.Instance.PlayerId;
+            return UnityServices.State == ServicesInitializationState.Initialized;
         }
 
         public static bool IsAuthenticated()
@@ -123,19 +89,20 @@ namespace XRMultiplayer
             {
                 return AuthenticationService.Instance.IsSignedIn;
             }
-            catch (Exception e)
+            catch (System.Exception e)
             {
                 Utils.Log($"{k_DebugPrepend}Checking for AuthenticationService.Instance before initialized.{e}");
                 return false;
             }
         }
 
-        static string GetPlayerIDArg()
+        string GetPlayerIDArg()
         {
             string playerID = "";
-            string[] args = Environment.GetCommandLineArgs();
+            string[] args = System.Environment.GetCommandLineArgs();
             foreach (string arg in args)
             {
+                arg.ToLower();
                 if (arg.ToLower().Contains(k_playerArgID.ToLower()))
                 {
                     var splitArgs = arg.Split(':');
@@ -148,60 +115,23 @@ namespace XRMultiplayer
             return playerID;
         }
 
-        static string SanitizeString(string playerId)
-        {
-            if (string.IsNullOrEmpty(playerId))
-            {
-                return string.Empty;
-            }
-
-            // Define the regular expression pattern to match characters that are NOT alphanumeric, dash, or underscore.
-            // \w matches [a-zA-Z0-9_] (alphanumeric and underscore)
-            // \- matches the literal hyphen
-            // The caret ^ inside the character set [] negates the set, matching anything NOT in the set.
-            string pattern = @"[^\w-]";
-            return Regex.Replace(playerId, pattern, "");
-        }
-
 #if UNITY_EDITOR
 #if HAS_MPPM
         string CheckMPPM()
         {
             Utils.Log($"{k_DebugPrepend}MPPM Found");
             string mppmString = "";
-
-            var arguments = Environment.GetCommandLineArgs();
-            for (int i = 0; i < arguments.Length; ++i)
+            if(CurrentPlayer.ReadOnlyTags().Length > 0)
             {
-                if (arguments[i] == k_MppmCloneProcess)
-                {
-                    m_IsVirtualPlayer = true;
-                    inputModule.enableMouseInput = false;
-                    inputModule.enableTouchInput = false;
-                }
-                if (arguments[i] == k_MppmEditorName && (i + 1) < arguments.Length)
-                {
-                    mppmString += arguments[i + 1];
-                }
-            }
+                mppmString += CurrentPlayer.ReadOnlyTags()[0];
 
-            if (m_IsVirtualPlayer && string.IsNullOrEmpty(mppmString))
-            {
-                Utils.LogWarning("An MPPM virtual player was detected, but the Player Name was not set. This may cause authentication failures when trying to connect.");
+                // Force input module to disable mouse and touch input to suppress MPPM startup errors.
+                var inputModule = FindFirstObjectByType<XRUIInputModule>();
+                inputModule.enableMouseInput = false;
+                inputModule.enableTouchInput = false;
             }
 
             return mppmString;
-        }
-
-        // This prevents the XRUIInputModule from throwing errors when MPPM is active but focus on the editor has not happened yet.
-        void OnApplicationFocus(bool focus)
-        {
-            // Check to make sure it's an MPPM Virtual Player.
-            if (focus && m_IsVirtualPlayer)
-            {
-                inputModule.enableMouseInput = true;
-                inputModule.enableTouchInput = true;
-            }
         }
 #endif
 

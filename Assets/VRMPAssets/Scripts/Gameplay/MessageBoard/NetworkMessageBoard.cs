@@ -44,7 +44,7 @@ namespace XRMultiplayer
         void Start()
         {
             XRINetworkGameManager.Connected.Subscribe(ConnectedToNetwork);
-            messageList = new NetworkList<FixedString512Bytes>(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+            messageList = new NetworkList<FixedString512Bytes>(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace XRMultiplayer
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
-            if (IsOwner)
+            if (IsServer)
             {
                 messageList.Clear();
             }
@@ -97,30 +97,30 @@ namespace XRMultiplayer
             }
 
             FixedString512Bytes newText = new FixedString512Bytes(textToSend);
-            SubmitMessageOwnerRpc(newText);
+            SubmitMessageServerRpc(newText);
         }
 
         /// <summary>
         /// Submits a message to the server.
         /// </summary>
         /// <param name="text">The message to submit.</param>
-        [Rpc(SendTo.Owner)]
-        void SubmitMessageOwnerRpc(FixedString512Bytes text)
+        [ServerRpc(RequireOwnership = false)]
+        void SubmitMessageServerRpc(FixedString512Bytes text)
         {
             messageList.Add(text);
             if (messageList.Count > m_MaxMessageCount)
             {
                 messageList.RemoveAt(0);
             }
-            SubmitMessageRpc(text);
+            SubmitMessageClientRpc(text);
         }
 
         /// <summary>
         /// Submits a message to the clients.
         /// </summary>
         /// <param name="text">The message to submit.</param>
-        [Rpc(SendTo.Everyone)]
-        void SubmitMessageRpc(FixedString512Bytes text)
+        [ClientRpc]
+        void SubmitMessageClientRpc(FixedString512Bytes text)
         {
             CreateText(text.ToString());
         }

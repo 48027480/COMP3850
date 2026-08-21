@@ -13,7 +13,7 @@ namespace XRMultiplayer
         /// <summary>
         /// The networked knob value.
         /// </summary>
-        NetworkVariable<float> m_NetworkedKnobValue = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        NetworkVariable<float> m_NetworkedKnobValue = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         /// <summary>
         /// The XR knob component.
@@ -38,7 +38,7 @@ namespace XRMultiplayer
             base.OnNetworkSpawn();
             m_XRKnob.onValueChange.AddListener(KnobChanged);
 
-            if (IsOwner)
+            if (IsServer)
             {
                 m_NetworkedKnobValue.Value = m_XRKnob.value;
             }
@@ -60,7 +60,7 @@ namespace XRMultiplayer
         /// <param name="newValue">The new value of the knob.</param>
         private void KnobChanged(float newValue)
         {
-            KnobChangedOwnerRpc(newValue, NetworkManager.Singleton.LocalClientId);
+            KnobChangedServerRpc(newValue, NetworkManager.Singleton.LocalClientId);
         }
 
         /// <summary>
@@ -68,11 +68,11 @@ namespace XRMultiplayer
         /// </summary>
         /// <param name="newValue">The new value of the knob.</param>
         /// <param name="clientId">The client ID of the player who changed the knob value.</param>
-        [Rpc(SendTo.Owner)]
-        void KnobChangedOwnerRpc(float newValue, ulong clientId)
+        [ServerRpc(RequireOwnership = false)]
+        void KnobChangedServerRpc(float newValue, ulong clientId)
         {
             m_NetworkedKnobValue.Value = newValue;
-            KnobChangedRpc(newValue, clientId);
+            KnobChangedClientRpc(newValue, clientId);
         }
 
         /// <summary>
@@ -80,8 +80,8 @@ namespace XRMultiplayer
         /// </summary>
         /// <param name="newValue">The new value of the knob.</param>
         /// <param name="clientId">The client ID of the player who changed the knob value.</param>
-        [Rpc(SendTo.Everyone)]
-        void KnobChangedRpc(float newValue, ulong clientId)
+        [ClientRpc]
+        void KnobChangedClientRpc(float newValue, ulong clientId)
         {
             if (clientId != NetworkManager.Singleton.LocalClientId)
             {

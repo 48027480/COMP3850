@@ -5,7 +5,6 @@ using Unity.Collections;
 using System;
 using Unity.Services.Vivox;
 using Unity.XR.CoreUtils.Bindings.Variables;
-using UnityEngine.XR.Templates.VRMultiplayer;
 
 namespace XRMultiplayer
 {
@@ -93,9 +92,6 @@ namespace XRMultiplayer
         /// </summary>
         public Color playerColor { get => m_PlayerColor.Value; }
         readonly NetworkVariable<Color> m_PlayerColor = new(Color.white, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-
-        public NetworkVariable<int> platformType => m_PlatformType;
-        readonly NetworkVariable<int> m_PlatformType = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
         [HideInInspector] public readonly NetworkVariable<bool> selfMuted = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
@@ -214,14 +210,10 @@ namespace XRMultiplayer
         {
             if (!IsOwner) return;
 
-            if (m_HeadOrigin != null)
-                head.SetPositionAndRotation(m_HeadOrigin.position, m_HeadOrigin.rotation);
-
-            if (m_LeftHandOrigin != null)
-                leftHand.SetPositionAndRotation(m_LeftHandOrigin.position, m_LeftHandOrigin.rotation);
-
-            if (m_RightHandOrigin != null)
-                rightHand.SetPositionAndRotation(m_RightHandOrigin.position, m_RightHandOrigin.rotation);
+            // Set transforms to be replicated with ClientNetworkTransforms
+            leftHand.SetPositionAndRotation(m_LeftHandOrigin.position, m_LeftHandOrigin.rotation);
+            rightHand.SetPositionAndRotation(m_RightHandOrigin.position, m_RightHandOrigin.rotation);
+            head.SetPositionAndRotation(m_HeadOrigin.position, m_HeadOrigin.rotation);
         }
 
         ///<inheritdoc/>
@@ -250,15 +242,11 @@ namespace XRMultiplayer
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
-            if (IsLocalPlayer)
+            if (IsOwner)
             {
                 // Set Local Player.
                 LocalPlayer = this;
-                XRINetworkGameManager.Instance.OnLocalClientStarted(NetworkObject.OwnerClientId);
-
-                // Setup Platform Type
-                m_PlatformType.Value = (int)XRPlatformUnderstanding.CurrentPlatform;
-                Debug.Log($"XRINetworkPlayer: Platform type set to {m_PlatformType.Value}");
+                XRINetworkGameManager.Instance.LocalPlayerConnected(NetworkObject.OwnerClientId);
 
                 // Get Origin and set head.
                 m_XROrigin = FindFirstObjectByType<XROrigin>();

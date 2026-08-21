@@ -4,25 +4,14 @@ using XRMultiplayer;
 
 public class GreetingBoardUI : MonoBehaviour
 {
-    [SerializeField]
-    TMP_Text m_RoomNameText;
+    [SerializeField] TMP_Text m_RoomNameText;
+    [SerializeField] TMP_Text m_RoomCodeText;
 
-    [SerializeField]
-    TMP_Text m_RoomCodeText;
-
-    [SerializeField]
-    TMP_Text m_RoomCodeLabelText;
 
     private void OnEnable()
     {
         XRINetworkGameManager.Connected.Subscribe(ConnectedToGame);
         XRINetworkGameManager.ConnectedRoomName.Subscribe(UpdateRoomName);
-    }
-
-    void Start()
-    {
-        if (XRINetworkGameManager.CurrentSessionType == SessionType.LocalOnly)
-            m_RoomCodeLabelText.text = "Connected IP";
     }
 
     private void OnDisable()

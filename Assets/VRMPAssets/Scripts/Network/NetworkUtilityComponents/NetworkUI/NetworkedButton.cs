@@ -27,19 +27,34 @@ namespace XRMultiplayer
         /// </summary>
         void ButtonClicked()
         {
-            ClickButtonRpc();
+            ClickButtonServerRpc(NetworkManager.Singleton.LocalClientId);
         }
 
         /// <summary>
         /// Called from the local user to the Server when the local user has clicked the button.
         /// </summary>
         /// <param name="clientId">Local user Id.</param>
-        [Rpc(SendTo.NotMe)]
-        void ClickButtonRpc()
+        [ServerRpc(RequireOwnership = false)]
+        void ClickButtonServerRpc(ulong clientId)
         {
-            m_Button.onClick.RemoveListener(ButtonClicked);
-            m_Button.onClick.Invoke();
-            m_Button.onClick.AddListener(ButtonClicked);
+            ClickButtonClientRpc(clientId);
+        }
+
+        /// <summary>
+        /// Called from the Server on all clients after a local user has clicked the button.
+        /// </summary>
+        /// <param name="clientId">Local user Id.</param>
+        [ClientRpc]
+        void ClickButtonClientRpc(ulong clientId)
+        {
+            // Don't update on the local client if they sent the call.
+            if (NetworkManager.Singleton.LocalClientId != clientId)
+            {
+                //Remove listener here before Invoking to prevent continuous looping
+                m_Button.onClick.RemoveListener(ButtonClicked);
+                m_Button.onClick.Invoke();
+                m_Button.onClick.AddListener(ButtonClicked);
+            }
         }
     }
 }

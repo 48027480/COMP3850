@@ -81,7 +81,7 @@ namespace XRMultiplayer.MiniGames
         {
             m_ProjectileProxyObject.SetActive(false);
             SlingshotProjectile projectile = Instantiate(m_ProjectilePrefab, m_BucketInteractable.transform.position, Quaternion.identity).GetComponent<SlingshotProjectile>();
-            XRINetworkGameManager.Instance.TryGetPlayerByID(m_BucketInteractable.OwnerClientId, out XRINetworkPlayer player);
+            XRINetworkGameManager.Instance.GetPlayerByID(m_BucketInteractable.OwnerClientId, out XRINetworkPlayer player);
             projectile.LaunchProjectile(m_SlingshotVisualUpdater.GetShotForce(), player.IsLocalPlayer, player.playerColor);
 
             foreach (var collider in m_CollidersToIgnore)
@@ -93,16 +93,25 @@ namespace XRMultiplayer.MiniGames
             {
                 projectile.localPlayerHitTarget += OnLocalPlayerHitTarget;
                 m_SlingshotVisualUpdater.ResetBucketPosition();
-                ResetProxyObjectRpc();
+                ResetProxyObjectServerRpc();
                 m_SlingshotVisualUpdater.trajectoryLineRenderer.enabled = false;
             }
         }
 
         /// <summary>
+        /// Resets the proxy object on the server.
+        /// </summary>
+        [ServerRpc(RequireOwnership = false)]
+        private void ResetProxyObjectServerRpc()
+        {
+            ResetProxyObjectClientRpc();
+        }
+
+        /// <summary>
         /// Resets the proxy object on the clients.
         /// </summary>
-        [Rpc(SendTo.Everyone)]
-        private void ResetProxyObjectRpc()
+        [ClientRpc]
+        private void ResetProxyObjectClientRpc()
         {
             StartCoroutine(ResetProxyAfterTime());
         }

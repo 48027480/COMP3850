@@ -191,7 +191,7 @@ namespace XRMultiplayer.MiniGames
         /// </summary>
         public void SpawnProcessServer()
         {
-            if (IsOwner)
+            if (IsServer)
                 SpawnProcessClientRpc(Random.Range(m_TrickTimeMinMax.x, m_TrickTimeMinMax.y));
         }
 
@@ -199,7 +199,7 @@ namespace XRMultiplayer.MiniGames
         /// Spawns a pig on the clients.
         /// </summary>
         /// <param name="waitTime">The time to wait before spawning the pig.</param>
-        [Rpc(SendTo.Everyone)]
+        [ClientRpc]
         public void SpawnProcessClientRpc(float waitTime)
         {
             m_Spawning = true;
@@ -246,7 +246,7 @@ namespace XRMultiplayer.MiniGames
         /// </summary>
         public void SpawnNewPig()
         {
-            if (!IsOwner) return;
+            if (!IsServer) return;
             SpawnPigClientRpc(Random.Range(0, m_ProxyPigs.Length), Random.value, Random.Range(m_TimeToStaySpawnedMinMax.x, m_TimeToStaySpawnedMinMax.y));
         }
 
@@ -255,7 +255,7 @@ namespace XRMultiplayer.MiniGames
         /// </summary>
         /// <param name="spawnIdx">The index of the spawn transform to use.</param>
         /// <param name="randomValue">A random value used to determine if a bad pig should be spawned.</param>
-        [Rpc(SendTo.Everyone)]
+        [ClientRpc]
         void SpawnPigClientRpc(int spawnIdx, float randomValue, float timeToStaySpawned)
         {
             StopTrickRoutine();
@@ -320,7 +320,7 @@ namespace XRMultiplayer.MiniGames
 
             // Destroy the pig and spawn a new one if we are the server
             Destroy(m_CurrentBreakablePig.gameObject);
-            if (IsOwner)
+            if (IsServer)
                 SpawnProcessServer();
         }
 
@@ -334,13 +334,13 @@ namespace XRMultiplayer.MiniGames
 
             if (grabInteractable == null)        // Probably in editor testing
             {
-                if (IsOwner & !m_Spawning)
+                if (IsServer & !m_Spawning)
                     SpawnProcessServer();
             }
             else if (grabInteractable.IsOwner)
             {
                 m_MiniGame.LocalPlayerScored(m_CurrentBreakablePig.pointValue);
-                DestroyPigOwnerRpc(grabInteractable.OwnerClientId);
+                DestroyPigServerRpc(grabInteractable.OwnerClientId);
                 StopCoroutine(m_CurrentRoutine);
             }
         }
@@ -349,8 +349,18 @@ namespace XRMultiplayer.MiniGames
         /// Destroys a pig on the server and notifies the clients.
         /// </summary>
         /// <param name="clientId">The client ID of the owner of the pig.</param>
-        [Rpc(SendTo.Everyone)]
-        void DestroyPigOwnerRpc(ulong clientId)
+        [ServerRpc(RequireOwnership = false)]
+        void DestroyPigServerRpc(ulong clientId)
+        {
+            DestroyPigClientRpc(clientId);
+        }
+
+        /// <summary>
+        /// Destroys a pig on the clients.
+        /// </summary>
+        /// <param name="clientId">The client ID of the owner of the pig.</param>
+        [ClientRpc]
+        void DestroyPigClientRpc(ulong clientId)
         {
             if (XRINetworkPlayer.LocalPlayer.OwnerClientId != clientId && m_CurrentBreakablePig != null)
             {
@@ -359,7 +369,7 @@ namespace XRMultiplayer.MiniGames
                 m_CurrentBreakablePig.Break(null);
             }
 
-            if (IsOwner & !m_Spawning)
+            if (IsServer & !m_Spawning)
                 SpawnProcessServer();
         }
     }

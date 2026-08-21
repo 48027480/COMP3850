@@ -46,7 +46,7 @@ namespace XRMultiplayer
         private void Start()
         {
             ShowCustomization();
-            XRINetworkGameManager.Instance.OnConnectionFailedAction += ConnectionFailed;
+            XRINetworkGameManager.Instance.connectionFailedAction += ConnectionFailed;
         }
 
         private void OnDestroy()
@@ -57,7 +57,7 @@ namespace XRMultiplayer
             OfflinePlayerAvatar.voiceAmp.Unsubscribe(UpdateMicIcon);
             m_VoiceChatManager.selfMuted.Subscribe(MutedChanged);
 
-            XRINetworkGameManager.Instance.OnConnectionFailedAction -= ConnectionFailed;
+            XRINetworkGameManager.Instance.connectionFailedAction -= ConnectionFailed;
         }
 
         void SetupPlayerDefaults()

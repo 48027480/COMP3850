@@ -160,8 +160,8 @@ namespace XRMultiplayer.MiniGames
                 PlayerHudNotification.Instance.ShowText($"Game Complete!");
             }
 
-            if (m_MiniGameManager.IsOwner && m_MiniGameManager.currentNetworkedGameState == MiniGameManager.GameState.InGame)
-                m_MiniGameManager.StopGameOwnerRpc();
+            if (m_MiniGameManager.IsServer && m_MiniGameManager.currentNetworkedGameState == MiniGameManager.GameState.InGame)
+                m_MiniGameManager.StopGameServerRpc();
         }
 
         /// <summary>

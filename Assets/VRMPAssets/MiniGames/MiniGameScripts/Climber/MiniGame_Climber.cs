@@ -91,7 +91,7 @@ namespace XRMultiplayer.MiniGames
             }
 
             if (submitScore)
-                m_MiniGameManager.SubmitScoreRpc(m_LocalPlayerTimer, XRINetworkPlayer.LocalPlayer.OwnerClientId, true);
+                m_MiniGameManager.SubmitScoreServerRpc(m_LocalPlayerTimer, XRINetworkPlayer.LocalPlayer.OwnerClientId, true);
         }
 
         void HitBell(Collider collider, bool isTriggered, Renderer bell)

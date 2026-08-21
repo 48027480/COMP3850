@@ -629,19 +629,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3829582587
+  GlobalObjectIdHash: 2959366255
   InScenePlacedSourceGlobalObjectIdHash: 3589412944
-  DeferredDespawnTick: 0
-  Ownership: 3
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 1
   SpawnWithObservers: 1
-  DontDestroyWithOwner: 1
+  DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
-  SyncOwnerTransformWhenParented: 1
-  AllowOwnerToParent: 0
 --- !u!114 &6328191341634634470
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -714,7 +710,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3673f01027db6384abcf3934934e5a4a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
   m_BroadcastValueOnJoin: 0
 --- !u!1 &5848509946176510285
 GameObject:
@@ -763,7 +758,6 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 2

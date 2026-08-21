@@ -118,11 +118,9 @@ namespace XRMultiplayer
             if (IsOwner)
             {
                 m_LockedOnSpawn.Value = spawnLocked;
+                m_Rigidbody.constraints = spawnLocked ? RigidbodyConstraints.FreezeAll : RigidbodyConstraints.None;
             }
 
-            m_Rigidbody.constraints = m_LockedOnSpawn.Value ? RigidbodyConstraints.FreezeAll : RigidbodyConstraints.None;
-
-            m_LockedOnSpawn.OnValueChanged += OnLockedChanged;
             m_ClientNetworkTransform.enabled = syncSelect;
         }
 
@@ -134,8 +132,6 @@ namespace XRMultiplayer
             {
                 ResetObjectPhysics();
             }
-
-            m_LockedOnSpawn.OnValueChanged -= OnLockedChanged;
         }
 
         /// <inheritdoc/>
@@ -151,18 +147,6 @@ namespace XRMultiplayer
             {
                 m_Collider.enabled = false;
                 m_Collider.enabled = true;
-            }
-        }
-
-        void OnLockedChanged(bool oldValue, bool newValue)
-        {
-            if (newValue)
-            {
-                m_Rigidbody.constraints = RigidbodyConstraints.FreezeAll;
-            }
-            else
-            {
-                m_Rigidbody.constraints = RigidbodyConstraints.None;
             }
         }
 
@@ -201,7 +185,7 @@ namespace XRMultiplayer
             bool wasKinematic = m_Rigidbody.isKinematic;
             if (!m_Rigidbody.isKinematic)
             {
-                m_Rigidbody.linearVelocity = Vector3.zero;
+                m_Rigidbody.velocity = Vector3.zero;
                 m_Rigidbody.angularVelocity = Vector3.zero;
             }
             m_Rigidbody.interpolation = RigidbodyInterpolation.None;
@@ -236,8 +220,6 @@ namespace XRMultiplayer
             if (CanHold() & !IsOwner)
             {
                 m_ClientNetworkTransform.enabled = false;
-                if (m_LockedOnSpawn.Value)
-                    m_Rigidbody.constraints = RigidbodyConstraints.None;
             }
         }
 
@@ -283,7 +265,7 @@ namespace XRMultiplayer
                 m_IsInteracting.Value = baseInteractable.isSelected;
                 if (!baseInteractable.isSelected & !m_Rigidbody.isKinematic)
                 {
-                    m_Rigidbody.linearVelocity = m_AverageVelocity;
+                    m_Rigidbody.velocity = m_AverageVelocity;
                 }
             }
         }
@@ -318,7 +300,7 @@ namespace XRMultiplayer
         /// <returns>Returns true if this object is moving faster than the <see cref="m_MinExchangeVelocityMagitude"/> and the object we are hitting.</returns>
         protected bool IsMovingFaster(Rigidbody otherBody)
         {
-            return m_Rigidbody.linearVelocity.magnitude > m_MinExchangeVelocityMagitude && m_Rigidbody.linearVelocity.magnitude > otherBody.linearVelocity.magnitude;
+            return m_Rigidbody.velocity.magnitude > m_MinExchangeVelocityMagitude && m_Rigidbody.velocity.magnitude > otherBody.velocity.magnitude;
         }
 
         /// <summary>
@@ -344,7 +326,7 @@ namespace XRMultiplayer
             m_ClientNetworkTransform.enabled = false;
             if (!m_Rigidbody.isKinematic)
             {
-                m_Rigidbody.linearVelocity = m_AverageVelocity;
+                m_Rigidbody.velocity = m_AverageVelocity;
             }
             if (((XRGrabInteractable)baseInteractable).movementType != XRBaseInteractable.MovementType.Kinematic)
             {
@@ -352,10 +334,16 @@ namespace XRMultiplayer
             }
 
             RelinquishOwnershipAfterTime();
-            NetworkObject.ChangeOwnership(NetworkManager.Singleton.LocalClientId);
+            RequestOwnershipRpc(NetworkManager.Singleton.LocalClientId);
             if (checkOwnershipRoutine != null) StopCoroutine(checkOwnershipRoutine);
             checkOwnershipRoutine = CheckOwnershipRoutine();
             StartCoroutine(checkOwnershipRoutine);
+        }
+
+        [Rpc(SendTo.Server)]
+        void RequestOwnershipRpc(ulong clientId)
+        {
+            NetworkObject.ChangeOwnership(clientId);
         }
 
         /// <summary>

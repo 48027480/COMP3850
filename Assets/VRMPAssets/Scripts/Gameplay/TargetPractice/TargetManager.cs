@@ -16,7 +16,7 @@ namespace XRMultiplayer
         /// <summary>
         /// The difficulty level of the game.
         /// </summary>
-        protected NetworkVariable<int> m_DifficultyLevel = new NetworkVariable<int>(-1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        protected NetworkVariable<int> m_DifficultyLevel = new NetworkVariable<int>(-1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         /// <summary>
         /// Indicates whether the targets are activated.
@@ -56,7 +56,7 @@ namespace XRMultiplayer
             m_activated = true;
 
             // Set the difficulty level to 0 on the server
-            if (IsOwner)
+            if (IsServer)
             {
                 m_DifficultyLevel.Value = 0;
             }
@@ -70,7 +70,7 @@ namespace XRMultiplayer
             m_activated = false;
 
             // Set the difficulty level to -1 on the server
-            if (IsOwner)
+            if (IsServer)
             {
                 m_DifficultyLevel.Value = -1;
             }
@@ -116,9 +116,21 @@ namespace XRMultiplayer
         /// </summary>
         /// <param name="clientId">The client ID of the player who hit the target.</param>
         /// <param name="playerColor">The color of the player who hit the target.</param>
-        [Rpc(SendTo.Everyone)]
-        public void HitTargetRpc(ulong clientId, Color playerColor)
+        [ServerRpc(RequireOwnership = false)]
+        public void HitTargetServerRpc(ulong clientId, Color playerColor)
         {
+            HitTargetClientRpc(clientId, playerColor);
+        }
+
+        /// <summary>
+        /// Client RPC method called when a target is hit.
+        /// </summary>
+        /// <param name="clientId">The client ID of the player who hit the target.</param>
+        /// <param name="playerColor">The color of the player who hit the target.</param>
+        [ClientRpc]
+        public void HitTargetClientRpc(ulong clientId, Color playerColor)
+        {
+            // Call the TargetHitNetwork method on the target corresponding to the current difficulty level
             targets[Mathf.Clamp(m_DifficultyLevel.Value, 0, targets.Length - 1)].TargetHitNetwork(clientId, playerColor);
         }
     }

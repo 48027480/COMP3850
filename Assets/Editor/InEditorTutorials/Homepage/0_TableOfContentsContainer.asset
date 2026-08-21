@@ -33,8 +33,8 @@ MonoBehaviour:
     Text:
       m_Untranslated: Learn more about the template features
     Metadata: 
-    Url: https://docs.unity3d.com/Packages/com.unity.template.vr-multiplayer@2.0/manual/index.html
-    Image: {fileID: 2800000, guid: 4c75a3746f8fc44dc91f63501d458ffb, type: 3}
+    Url: https://docs.unity3d.com/Packages/com.unity.template.vr-multiplayer@1.1/manual/index.html
+    Image: {fileID: 2800000, guid: 6d36d245fcffe4a02a7766b89dd5ca5b, type: 3}
     Tutorial: {fileID: 0}
   - OrderInView: 0
     Heading:
@@ -43,7 +43,7 @@ MonoBehaviour:
       m_Untranslated: Report bugs to the XR team
     Metadata: 
     Url: https://unity.com/releases/editor/qa/bug-reporting
-    Image: {fileID: 2800000, guid: 4c75a3746f8fc44dc91f63501d458ffb, type: 3}
+    Image: {fileID: 2800000, guid: 6d36d245fcffe4a02a7766b89dd5ca5b, type: 3}
     Tutorial: {fileID: 0}
   - OrderInView: 0
     Heading:
@@ -52,6 +52,5 @@ MonoBehaviour:
       m_Untranslated: Tell us about your experience
     Metadata: 
     Url: https://unitysoftware.co1.qualtrics.com/jfe/form/SV_eLg9sxLQEon6vf8
-    Image: {fileID: 2800000, guid: 4c75a3746f8fc44dc91f63501d458ffb, type: 3}
+    Image: {fileID: 2800000, guid: 6d36d245fcffe4a02a7766b89dd5ca5b, type: 3}
     Tutorial: {fileID: 0}
-  FaqEntries: []

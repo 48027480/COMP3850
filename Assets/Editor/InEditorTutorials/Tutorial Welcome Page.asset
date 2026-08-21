@@ -21,8 +21,8 @@ MonoBehaviour:
   m_Title:
     m_Untranslated: '                    Welcome to the VR Multiplayer Template Project'
   m_Description:
-    m_Untranslated: 'Before you begin exploring, select the <b>Start UGS Configuration</b>
-      button below, this will guide you through the Unity Gaming Services (UGS) configuration,
+    m_Untranslated: 'Before you begin exploring, select the <b>Start UGS Configuration</b>button
+      below, this will guide you through the Unity Gaming Services (UGS) configuration,
       which is required to setup a networked environment.
 
 
@@ -31,10 +31,10 @@ MonoBehaviour:
       Dashboard.</a>
 
 
-      Please refer to the <a href="https://docs.unity3d.com/Packages/com.unity.template.vr-multiplayer@2.0/manual/index.html">Quick
-      Start Guide</a> for more information on the content and settings used in this
-      template. Additionally, the <b>Tutorials</b> tab provides sample content overviews
-      and official Unity resources to help you along the way. '
+      Please refer to the <a href="https://docs.unity3d.com/Packages/com.unity.template.vr-multiplayer@1.1/manual/index.html">Quick Start Guide</a>for
+      more information on the content and settings used in this template. Additionally,
+      the <b>Tutorials</b> tab provides sample content overviews and official Unity
+      resources to help you along the way. '
   m_Buttons:
   - Text:
       m_Untranslated: Start UGS Configuration

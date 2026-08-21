@@ -83,12 +83,12 @@ namespace XRMultiplayer
         /// <summary>
         /// The network variable to store the current song ID.
         /// </summary>
-        readonly NetworkVariable<int> m_CurrentSongIdNetworked = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        readonly NetworkVariable<int> m_CurrentSongIdNetworked = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         /// <summary>
         /// The network variable to store the state of whether or not we are actively playing music.
         /// </summary>
-        readonly NetworkVariable<bool> m_IsPlayingNetworked = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        readonly NetworkVariable<bool> m_IsPlayingNetworked = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         /// <summary>
         /// Indicates whether the music should be shuffled.
@@ -149,7 +149,7 @@ namespace XRMultiplayer
             m_CurrentSongIdNetworked.OnValueChanged += CurrentSongUpdated;
             m_IsPlayingNetworked.OnValueChanged += OnIsPlayingChanged;
 
-            if (IsOwner)
+            if (IsServer)
             {
                 m_IsPlayingNetworked.Value = m_AutoPlay;
                 if (!m_AutoPlay)
@@ -164,7 +164,7 @@ namespace XRMultiplayer
                 if (m_IsPlayingNetworked.Value)
                 {
                     SetSong(m_CurrentSongIdNetworked.Value);
-                    GetCurrentSongPercFromOwnerRpc();
+                    GetCurrentSongPercFromServerRpc();
                 }
                 OnIsPlayingChanged(false, m_IsPlayingNetworked.Value);
             }
@@ -185,7 +185,7 @@ namespace XRMultiplayer
             SetClipTime(0.0f);
             m_TimelineSlider.SetValueWithoutNotify(0.0f);
 
-            if (IsOwner)
+            if (IsServer)
             {
                 if (m_CurrentSongIdNetworked != null)
                     m_CurrentSongIdNetworked.Value = 0;
@@ -272,7 +272,7 @@ namespace XRMultiplayer
         /// <param name="toggle">The new toggle state.</param>
         void TogglePlay(bool toggle)
         {
-            if (IsOwner)
+            if (IsServer)
             {
                 m_IsPlayingNetworked.Value = toggle;
             }
@@ -284,7 +284,7 @@ namespace XRMultiplayer
         /// <param name="dir">The direction to pick the new song (-1 for previous, 1 for next).</param>
         void PickNewSong(int dir = 1)
         {
-            if (!IsOwner)
+            if (!IsServer)
                 return;
 
             if (m_Shuffle)
@@ -327,7 +327,7 @@ namespace XRMultiplayer
         {
             m_Dropdown.value = songId;
             SetClipTime(0.0f);
-            if (IsOwner)
+            if (IsServer)
             {
                 m_CurrentSongIdNetworked.Value = songId;
                 m_IsPlayingNetworked.Value = true;
@@ -391,14 +391,14 @@ namespace XRMultiplayer
             m_AudioSource.time = Mathf.Clamp(value, .01f, .99f) * m_AudioSource.clip.length;
         }
 
-        [Rpc(SendTo.Owner)]
-        void GetCurrentSongPercFromOwnerRpc(RpcParams rpcParams = default)
+        [Rpc(SendTo.Server)]
+        void GetCurrentSongPercFromServerRpc(RpcParams rpcParams = default)
         {
-            SendCurrentSongPercToSpecificRpc(m_AudioSource.time / m_AudioSource.clip.length, RpcTarget.Single(rpcParams.Receive.SenderClientId, RpcTargetUse.Temp));
+            SendCurrentSongPercToClientRpc(m_AudioSource.time / m_AudioSource.clip.length, RpcTarget.Single(rpcParams.Receive.SenderClientId, RpcTargetUse.Temp));
         }
 
         [Rpc(SendTo.SpecifiedInParams)]
-        void SendCurrentSongPercToSpecificRpc(float perc, RpcParams rpcParams = default)
+        void SendCurrentSongPercToClientRpc(float perc, RpcParams rpcParams = default)
         {
             m_AudioSource.time = perc * m_AudioSource.clip.length;
             m_TimelineSlider.SetValueWithoutNotify(perc / m_AudioSource.clip.length);

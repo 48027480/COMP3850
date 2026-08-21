@@ -10,7 +10,7 @@ namespace XRMultiplayer
         /// <summary>
         /// The networked knob value.
         /// </summary>
-        NetworkVariable<bool> m_NetworkedLeverValue = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        NetworkVariable<bool> m_NetworkedLeverValue = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         XRLever m_XRLever;
 
@@ -32,7 +32,7 @@ namespace XRMultiplayer
             m_XRLever.onLeverActivate.AddListener(LeverChanged);
             m_XRLever.onLeverDeactivate.AddListener(LeverChanged);
 
-            if (IsOwner)
+            if (IsServer)
             {
                 m_NetworkedLeverValue.Value = m_XRLever.value;
             }
@@ -51,18 +51,18 @@ namespace XRMultiplayer
 
         void LeverChanged()
         {
-            LeverChangedOwnerRpc(m_XRLever.value, NetworkManager.Singleton.LocalClientId);
+            LeverChangedServerRpc(m_XRLever.value, NetworkManager.Singleton.LocalClientId);
         }
 
-        [Rpc(SendTo.Owner)]
-        void LeverChangedOwnerRpc(bool newValue, ulong clientId)
+        [ServerRpc(RequireOwnership = false)]
+        void LeverChangedServerRpc(bool newValue, ulong clientId)
         {
             m_NetworkedLeverValue.Value = newValue;
-            LeverChangedRpc(newValue, clientId);
+            LeverChangedClientRpc(newValue, clientId);
         }
 
-        [Rpc(SendTo.Everyone)]
-        void LeverChangedRpc(bool newValue, ulong clientId)
+        [ClientRpc]
+        void LeverChangedClientRpc(bool newValue, ulong clientId)
         {
             if (clientId != NetworkManager.Singleton.LocalClientId)
             {

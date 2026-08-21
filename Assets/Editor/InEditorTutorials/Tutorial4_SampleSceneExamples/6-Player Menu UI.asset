@@ -16,24 +16,14 @@ MonoBehaviour:
     m_Untranslated: Player Menu UI
   m_Paragraphs:
     m_Items:
-    - m_Type: 9
+    - m_Type: 6
       Title:
         m_Untranslated: 
       Text:
         m_Untranslated: 
-      m_CodeSample: 
-      m_PostInstructionImage: {fileID: 0}
       m_Tutorial: {fileID: 0}
       m_Image: {fileID: 0}
-      m_VideoUrl: 
       m_Video: {fileID: 0}
-      m_Media:
-        m_ContentType: 0
-        m_Image: {fileID: 0}
-        m_VideoClip: {fileID: 0}
-        m_Url: 
-        m_AutoStart: 1
-        m_Loop: 1
       m_CriteriaCompletion: 0
       m_Criteria:
         m_Items: []
@@ -66,19 +56,9 @@ MonoBehaviour:
           or <b>Create</b> a new room.\n\n   \xB7<b>Player Settings</b>-Displays
           a collapsable list of editable Audio and Locomotion options. \n\n   \xB7<b>Microphone
           Toggle</b>-Switches the microphone from active to inactive. "
-      m_CodeSample: 
-      m_PostInstructionImage: {fileID: 0}
       m_Tutorial: {fileID: 0}
       m_Image: {fileID: 0}
-      m_VideoUrl: 
       m_Video: {fileID: 0}
-      m_Media:
-        m_ContentType: 0
-        m_Image: {fileID: 0}
-        m_VideoClip: {fileID: 0}
-        m_Url: 
-        m_AutoStart: 1
-        m_Loop: 1
       m_CriteriaCompletion: 0
       m_Criteria:
         m_Items: []
@@ -95,19 +75,9 @@ MonoBehaviour:
         m_Untranslated: Player Menu UI Overview Complete!
       Text:
         m_Untranslated: Press <b>Next</b> to continue.
-      m_CodeSample: 
-      m_PostInstructionImage: {fileID: 0}
       m_Tutorial: {fileID: 0}
       m_Image: {fileID: 0}
-      m_VideoUrl: 
       m_Video: {fileID: 0}
-      m_Media:
-        m_ContentType: 0
-        m_Image: {fileID: 0}
-        m_VideoClip: {fileID: 0}
-        m_Url: 
-        m_AutoStart: 1
-        m_Loop: 1
       m_CriteriaCompletion: 0
       m_Criteria:
         m_Items: []
@@ -123,9 +93,9 @@ MonoBehaviour:
     m_CameraMode: 1
     m_FocusMode: 0
     m_Orthographic: 0
-    m_Size: 0.35034737
-    m_Pivot: {x: 0, y: 3.65, z: -12}
-    m_Rotation: {x: 0, y: 0, z: 0, w: 1}
+    m_Size: 0.28828156
+    m_Pivot: {x: -3.6573021, y: 2.8772428, z: -11.997421}
+    m_Rotation: {x: -0.016499056, y: -0.000000022170873, z: -0.0000014718337, w: 0.99986655}
     m_FrameObject:
       m_SceneGuid: 
       m_GameObjectGuid: 
@@ -140,7 +110,6 @@ MonoBehaviour:
   DoneButton:
     m_Untranslated: Done
   m_CompletedSound: {fileID: 0}
-  m_FaqEntries: []
   m_AutoAdvance: 0
   Showing:
     m_PersistentCalls:

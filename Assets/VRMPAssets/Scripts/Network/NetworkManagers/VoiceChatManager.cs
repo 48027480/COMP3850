@@ -7,6 +7,8 @@ using UnityEngine;
 using UnityEngine.Android;
 using System.Collections;
 
+
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -139,13 +141,6 @@ namespace XRMultiplayer
         private void Awake()
         {
             m_ConnectedToRoom = false;
-        }
-
-        void Start()
-        {
-            // Voice chat is not available in local only sessions.
-            if (XRINetworkGameManager.CurrentSessionType == SessionType.LocalOnly)
-                return;
 
             XRINetworkGameManager.CurrentConnectionState.Subscribe(ConnectionStateUpdated);
             XRINetworkGameManager.Connected.Subscribe(ConnectedToGame);
@@ -154,18 +149,8 @@ namespace XRMultiplayer
         ///<inheritdoc/>
         private void OnDestroy()
         {
-            if (VivoxService.Instance != null)
-            {
-                VivoxService.Instance.LoggedIn -= LocalUserLoggedIn;
-                UnbindParticipantEvents();
-            }
-
-            // Voice chat is not available in local only sessions.
-            if (XRINetworkGameManager.CurrentSessionType == SessionType.LocalOnly)
-                return;
-
-            XRINetworkGameManager.CurrentConnectionState.Unsubscribe(ConnectionStateUpdated);
-            XRINetworkGameManager.Connected.Unsubscribe(ConnectedToGame);
+            VivoxService.Instance.LoggedIn -= LocalUserLoggedIn;
+            UnbindParticipantEvents();
         }
 
         /// <summary>
@@ -178,7 +163,7 @@ namespace XRMultiplayer
 
             if (connected)
             {
-                Login();
+                Login(XRINetworkGameManager.AuthenicationId, XRINetworkGameManager.Instance.lobbyManager.connectedLobby.Id);
             }
             else
             {
@@ -239,7 +224,7 @@ namespace XRMultiplayer
             PlayerHudNotification.Instance.ShowText("Microphone Permissions Granted", 3.0f);
         }
 
-        async void EnableVoiceChat()
+        public async void EnableVoiceChat()
         {
             try
             {
@@ -269,10 +254,10 @@ namespace XRMultiplayer
         }
 #endif
 
-        async void Login()
+
+        public async void Login(string displayName, string roomCode)
         {
-            var displayName = XRINetworkGameManager.AuthenicationId;
-            m_CurrentLobbyId = XRINetworkGameManager.Instance.sessionManager.currentSession.Id;
+            m_CurrentLobbyId = roomCode;
 
             LoginOptions loginOptions = new()
             {
@@ -289,7 +274,7 @@ namespace XRMultiplayer
 
             if (!VivoxService.Instance.IsLoggedIn)
             {
-                Utils.Log($"{k_DebugPrepend}Logging In to room {m_CurrentLobbyId} as {displayName}");
+                Utils.Log($"{k_DebugPrepend}Logging In to room {roomCode} as {displayName}");
                 m_ConnectionStatus.Value = "Logging In To Voice Service";
                 await VivoxService.Instance.LoginAsync(loginOptions);
             }
@@ -309,7 +294,7 @@ namespace XRMultiplayer
             }
         }
 
-        async void ConnectToVoiceChannel()
+        public async void ConnectToVoiceChannel()
         {
             if (NetworkManager.Singleton.IsConnectedClient & !m_ConnectedToRoom)
             {
@@ -350,11 +335,6 @@ namespace XRMultiplayer
         [ContextMenu("Reconnect")]
         public void Reconnect()
         {
-            if (XRINetworkGameManager.CurrentSessionType == SessionType.LocalOnly)
-            {
-                Utils.Log($"{k_DebugPrepend}Cannot reconnect in Local Only session.", 1);
-                return;
-            }
             ReconnectAsync();
         }
 
@@ -370,11 +350,11 @@ namespace XRMultiplayer
             else
             {
                 m_ConnectionStatus.Value = "Reconnecting to Voice Chat";
-                Login();
+                Login(XRINetworkGameManager.AuthenicationId, XRINetworkGameManager.Instance.lobbyManager.connectedLobby.Id);
             }
         }
 
-        void LogOut()
+        public void LogOut()
         {
             Utils.Log($"{k_DebugPrepend}Logging out of Voice Chat.");
             if (VivoxService.Instance.IsLoggedIn && m_ConnectedToRoom)
@@ -411,7 +391,7 @@ namespace XRMultiplayer
                 m_SelfMuted.Value = false;
             }
 
-            if (XRINetworkGameManager.CurrentSessionType == SessionType.DistributedAuthority && VivoxService.Instance.IsLoggedIn)
+            if (VivoxService.Instance.IsLoggedIn)
             {
                 if (m_SelfMuted.Value)
                 {

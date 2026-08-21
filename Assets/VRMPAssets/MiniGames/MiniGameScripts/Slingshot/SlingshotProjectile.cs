@@ -47,7 +47,7 @@ namespace XRMultiplayer.MiniGames
         {
             Setup(isLocalPlayer, playerColor);
             m_Collider.enabled = false;
-            m_Rigidbody.linearVelocity = launchForce;
+            m_Rigidbody.velocity = launchForce;
             StartCoroutine(LaunchRoutine());
         }
 

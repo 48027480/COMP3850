@@ -1,5 +1,4 @@
 using System;
-using Unity.Netcode;
 using UnityEngine;
 
 namespace XRMultiplayer
@@ -40,30 +39,27 @@ namespace XRMultiplayer
         /// <summary>
         /// Reference to the attached XRINetworkPlayerAvatar component.
         /// </summary>
-        protected XRINetworkPlayer m_NetworkPlayer;
+        protected XRINetworkPlayer m_NetworkPlayerAvatar;
 
         public virtual void Awake()
         {
-            if (!TryGetComponent(out m_NetworkPlayer))
+            if (!TryGetComponent(out m_NetworkPlayerAvatar))
             {
                 Utils.LogError("XRAvatarVisuals requires a XRINetworkPlayerAvatar component to be attached to the same GameObject. Disabling this component now.");
                 enabled = false;
                 return;
             }
 
-            m_NetworkPlayer.onSpawnedLocal += PlayerSpawnedLocal;
-            m_NetworkPlayer.onSpawnedAll += PlayerSpawnedAll;
-            m_NetworkPlayer.onColorUpdated += SetPlayerColor;
-            XRINetworkGameManager.Instance.OnSessionOwnerPromoted += HostUpdated;
+            m_NetworkPlayerAvatar.onSpawnedLocal += PlayerSpawnedLocal;
+            m_NetworkPlayerAvatar.onSpawnedAll += PlayerSpawnedAll;
+            m_NetworkPlayerAvatar.onColorUpdated += SetPlayerColor;
         }
 
         public virtual void OnDestroy()
         {
-            m_NetworkPlayer.onSpawnedLocal -= PlayerSpawnedLocal;
-            m_NetworkPlayer.onSpawnedAll -= PlayerSpawnedAll;
-            m_NetworkPlayer.onColorUpdated -= SetPlayerColor;
-
-            XRINetworkGameManager.Instance.OnSessionOwnerPromoted -= HostUpdated;
+            m_NetworkPlayerAvatar.onSpawnedLocal -= PlayerSpawnedLocal;
+            m_NetworkPlayerAvatar.onSpawnedAll -= PlayerSpawnedAll;
+            m_NetworkPlayerAvatar.onColorUpdated -= SetPlayerColor;
         }
 
         public virtual void Update()
@@ -74,7 +70,7 @@ namespace XRMultiplayer
         public virtual void UpdateMouth()
         {
             if (m_headRend != null)
-                m_headRend.SetBlendShapeWeight(0, 100 - (m_NetworkPlayer.playerVoiceAmp * 100));
+                m_headRend.SetBlendShapeWeight(0, 100 - (m_NetworkPlayerAvatar.playerVoiceAmp * 100));
         }
 
         public virtual void PlayerSpawnedLocal()
@@ -90,17 +86,12 @@ namespace XRMultiplayer
 
         public virtual void PlayerSpawnedAll()
         {
-            m_HostVisuals.SetActive(m_ShowHostVisuals && m_NetworkPlayer.NetworkObject.OwnerClientId == NetworkManager.Singleton.CurrentSessionOwner);
+            m_HostVisuals.SetActive(m_ShowHostVisuals && m_NetworkPlayerAvatar.IsOwnedByServer);
         }
 
         public virtual void SetPlayerColor(Color newColor)
         {
             m_headRend.materials[2].SetColor("_BaseColor", newColor);
-        }
-
-        public virtual void HostUpdated(ulong newHostId)
-        {
-            m_HostVisuals.SetActive(m_ShowHostVisuals && m_NetworkPlayer.NetworkObject.OwnerClientId == newHostId);
         }
     }
 }

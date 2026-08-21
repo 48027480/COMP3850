@@ -7,39 +7,6 @@ using UnityEngine.UI;
 
 namespace XRMultiplayer
 {
-    public static class Extensions
-    {
-        public static void DrawCircle(this Gizmos gizmos, Vector3 center, float radius, int segments, bool faceCamera = true)
-        {
-            if (Camera.current == null) return;
-
-            Vector3 viewDir = Vector3.up;
-
-            // Get camera view direction
-            if (faceCamera)
-                viewDir = (Camera.current.transform.position - center).normalized;
-
-            // Avoid degenerate case when viewDir is parallel to Vector3.up
-            Vector3 refUp = Mathf.Abs(Vector3.Dot(viewDir, Vector3.up)) > 0.99f ? Vector3.forward : Vector3.up;
-
-            // Build perpendicular basis vectors
-            Vector3 right = Vector3.Cross(viewDir, refUp).normalized;
-            Vector3 up = Vector3.Cross(right, viewDir).normalized;
-
-            Vector3 prevPoint = Vector3.zero;
-            for (int i = 0; i <= segments; i++)
-            {
-                float angle = 2 * Mathf.PI * i / segments;
-                Vector3 offset = Mathf.Cos(angle) * right + Mathf.Sin(angle) * up;
-                Vector3 point = center + offset * radius;
-
-                if (i > 0)
-                    Gizmos.DrawLine(prevPoint, point);
-
-                prevPoint = point;
-            }
-        }
-    }
     public class Utils : MonoBehaviour
     {
         public const string k_LogPrefix = "<color=#33FF64>[XRMultiplayer]</color> ";

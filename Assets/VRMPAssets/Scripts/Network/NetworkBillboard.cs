@@ -30,7 +30,7 @@ public class NetworkBillboard : NetworkBehaviour
         {
             m_TurnToFace.enabled = true;
 
-            if (XRINetworkGameManager.Instance.TryGetPlayerByID(NetworkObject.OwnerClientId, out XRINetworkPlayer player))
+            if (XRINetworkGameManager.Instance.GetPlayerByID(NetworkObject.OwnerClientId, out XRINetworkPlayer player))
             {
                 m_TurnToFace.faceTarget = player.head;
             }

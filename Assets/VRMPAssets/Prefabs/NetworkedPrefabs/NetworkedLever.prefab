@@ -44,7 +44,6 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -455,8 +454,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GlobalObjectIdHash: 3989364990
   InScenePlacedSourceGlobalObjectIdHash: 0
-  DeferredDespawnTick: 0
-  Ownership: 3
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
@@ -464,8 +461,6 @@ MonoBehaviour:
   SpawnWithObservers: 1
   DontDestroyWithOwner: 1
   AutoObjectParentSync: 1
-  SyncOwnerTransformWhenParented: 1
-  AllowOwnerToParent: 0
 --- !u!114 &1173091587216600484
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -478,7 +473,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1af5a1a5d9d769f4cb8c5209829fe788, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!114 &6345196076392927987
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -633,12 +627,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4077244047705437675, guid: a39b6d1af189d1f49a583af3af3d2ea9,
         type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
+      propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 03e5e5f70d7a6584698694f275b9d138, type: 2}
     - target: {fileID: 4077244047705437675, guid: a39b6d1af189d1f49a583af3af3d2ea9,
         type: 3}
-      propertyPath: 'm_Materials.Array.data[1]'
+      propertyPath: m_Materials.Array.data[1]
       value: 
       objectReference: {fileID: 2100000, guid: a736c70acd93f0b419b8a24bb0b658e8, type: 2}
     - target: {fileID: 6624324225981693718, guid: a39b6d1af189d1f49a583af3af3d2ea9,
@@ -668,12 +662,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7465486547380588842, guid: a39b6d1af189d1f49a583af3af3d2ea9,
         type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
+      propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 7ee01af89d208724a86e37e1e8d34a35, type: 2}
     - target: {fileID: 7465486547380588842, guid: a39b6d1af189d1f49a583af3af3d2ea9,
         type: 3}
-      propertyPath: 'm_Materials.Array.data[1]'
+      propertyPath: m_Materials.Array.data[1]
       value: 
       objectReference: {fileID: 2100000, guid: 03e5e5f70d7a6584698694f275b9d138, type: 2}
     m_RemovedComponents: []
@@ -712,10 +706,10 @@ Rigidbody:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2926282629613942931}
-  serializedVersion: 5
+  serializedVersion: 4
   m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
+  m_Drag: 0
+  m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}

@@ -54,7 +54,7 @@ namespace XRMultiplayer
         /// </summary>
         public void TargetHitLocal()
         {
-            m_TargetManager.HitTargetRpc(NetworkManager.Singleton.LocalClientId, XRINetworkGameManager.LocalPlayerColor.Value);
+            m_TargetManager.HitTargetServerRpc(NetworkManager.Singleton.LocalClientId, XRINetworkGameManager.LocalPlayerColor.Value);
             PlayHitEffects(XRINetworkGameManager.LocalPlayerColor.Value);
         }
 
@@ -70,7 +70,7 @@ namespace XRMultiplayer
                 PlayHitEffects(playerColor);
             }
 
-            if (m_TargetManager.IsOwner)
+            if (m_TargetManager.IsServer)
             {
                 StartCoroutine(TargetHitSequence());
             }

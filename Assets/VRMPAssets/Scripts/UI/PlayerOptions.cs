@@ -65,7 +65,6 @@ namespace XRMultiplayer
 
             XRINetworkGameManager.Connected.Subscribe(ConnectOnline);
             XRINetworkGameManager.ConnectedRoomName.Subscribe(UpdateRoomName);
-            XRINetworkGameManager.Instance.OnSessionOwnerPromoted += UpdateHostVisuals;
 
             m_VoiceChatManager.selfMuted.Subscribe(MutedChanged);
             m_VoiceChatManager.connectionStatus.Subscribe(UpdateVoiceChatStatus);
@@ -82,12 +81,6 @@ namespace XRMultiplayer
             permCallbacks = new PermissionCallbacks();
             permCallbacks.PermissionDenied += PermissionCallbacks_PermissionDenied;
             permCallbacks.PermissionGranted += PermissionCallbacks_PermissionGranted;
-        }
-
-        private void UpdateHostVisuals(ulong newHostId)
-        {
-            m_HostRoomPanel.SetActive(NetworkManager.Singleton.LocalClientId == newHostId);
-            m_ClientRoomPanel.SetActive(NetworkManager.Singleton.LocalClientId != newHostId);
         }
 
         internal void PermissionCallbacks_PermissionGranted(string permissionName)
@@ -119,7 +112,6 @@ namespace XRMultiplayer
         {
             XRINetworkGameManager.Connected.Unsubscribe(ConnectOnline);
             XRINetworkGameManager.ConnectedRoomName.Unsubscribe(UpdateRoomName);
-            XRINetworkGameManager.Instance.OnSessionOwnerPromoted += UpdateHostVisuals;
             m_VoiceChatManager.selfMuted.Unsubscribe(MutedChanged);
 
             m_VoiceChatManager.connectionStatus.Unsubscribe(UpdateVoiceChatStatus);
@@ -154,8 +146,8 @@ namespace XRMultiplayer
 
             if (connected)
             {
-                m_HostRoomPanel.SetActive(XRINetworkPlayer.LocalPlayer.IsSessionOwner);
-                m_ClientRoomPanel.SetActive(!XRINetworkPlayer.LocalPlayer.IsSessionOwner);
+                m_HostRoomPanel.SetActive(NetworkManager.Singleton.IsServer);
+                m_ClientRoomPanel.SetActive(!NetworkManager.Singleton.IsServer);
                 UpdateRoomName(XRINetworkGameManager.ConnectedRoomName.Value);
                 m_MutedIcon.enabled = false;
                 m_MicOnIcon.enabled = true;
@@ -254,12 +246,12 @@ namespace XRMultiplayer
         // Room Options
         public void UpdateRoomPrivacy(bool toggle)
         {
-            XRINetworkGameManager.Instance.sessionManager.UpdateRoomPrivacy(toggle);
+            XRINetworkGameManager.Instance.lobbyManager.UpdateRoomPrivacy(toggle);
         }
 
         public void SubmitNewRoomName(string text)
         {
-            XRINetworkGameManager.Instance.sessionManager.UpdateLobbyName(text);
+            XRINetworkGameManager.Instance.lobbyManager.UpdateLobbyName(text);
         }
 
         void UpdateRoomName(string newValue)

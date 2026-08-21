@@ -16,24 +16,14 @@ MonoBehaviour:
     m_Untranslated: Successfully Connected!
   m_Paragraphs:
     m_Items:
-    - m_Type: 9
+    - m_Type: 6
       Title:
         m_Untranslated: 
       Text:
         m_Untranslated: 
-      m_CodeSample: 
-      m_PostInstructionImage: {fileID: 0}
       m_Tutorial: {fileID: 0}
       m_Image: {fileID: 0}
-      m_VideoUrl: 
       m_Video: {fileID: 0}
-      m_Media:
-        m_ContentType: 0
-        m_Image: {fileID: 0}
-        m_VideoClip: {fileID: 0}
-        m_Url: 
-        m_AutoStart: 1
-        m_Loop: 1
       m_CriteriaCompletion: 0
       m_Criteria:
         m_Items: []
@@ -55,31 +45,17 @@ MonoBehaviour:
           within your organization that are linked to this Unity Project ID, or create
           a project Build to connect with anyone!\n\nThis connection is the equivalent
           to calling <b>XRINetworkGameManager.Instance.QuickJoinLobby()</b> directly.\nThe
-          <b>XRINetworkGameManager</b> leverages <b>Unity Multiplayer Services</b>
-          and automatically finds and connects to any existing networked games using
-          this <b>Unity Project ID.</b> If no current networked game sessions exist,
-          it will create a new session.\n\nTo further speed up your testing, you
-          can use Multiplayer Play Mode. <a href=\"https://docs-multiplayer.unity3d.com/mppm/current/about/\">Multiplayer
-          Play Mode</a> is a Unity Editor extension that allows you to test multiplayer
-          gameplay without building the project. You can simulate up to four Players
-          (the main Editor Player and three Virtual Players) at the same time, on
-          the same development device while using the same source assets on disk.
-          Multiplayer Play Mode can help you create multiplayer development workflows
-          that reduce project build times, run it locally, and test the server-client
-          relationship."
-      m_CodeSample: 
-      m_PostInstructionImage: {fileID: 0}
+          <b>XRINetworkGameManager</b> leverages UGS Multiplayer <b>Lobby, Relay</b>
+          and <b>Vivox</b> and automatically finds and connects to any existing networked
+          games using this <b>Unity Project ID.</b> If no current networked game
+          sessions exist, it will create a new session.\n\nTo further speed up your
+          testing, you can use ParrelSync. <a href=\"https://github.com/VeriorPies/ParrelSync/tree/master\">ParrelSync</a>
+          is a Unity Editor extension that allows you to test multiplayer gameplay
+          without building the project. It opens another Unity Editor window and
+          mirrors the changes from the original project."
       m_Tutorial: {fileID: 0}
       m_Image: {fileID: 0}
-      m_VideoUrl: 
       m_Video: {fileID: 0}
-      m_Media:
-        m_ContentType: 0
-        m_Image: {fileID: 0}
-        m_VideoClip: {fileID: 0}
-        m_Url: 
-        m_AutoStart: 1
-        m_Loop: 1
       m_CriteriaCompletion: 0
       m_Criteria:
         m_Items: []
@@ -96,19 +72,9 @@ MonoBehaviour:
         m_Untranslated: Tutorial Complete!
       Text:
         m_Untranslated: Press <b>Done</b> to exit this tutorial.
-      m_CodeSample: 
-      m_PostInstructionImage: {fileID: 0}
       m_Tutorial: {fileID: 0}
       m_Image: {fileID: 0}
-      m_VideoUrl: 
       m_Video: {fileID: 0}
-      m_Media:
-        m_ContentType: 0
-        m_Image: {fileID: 0}
-        m_VideoClip: {fileID: 0}
-        m_Url: 
-        m_AutoStart: 1
-        m_Loop: 1
       m_CriteriaCompletion: 0
       m_Criteria:
         m_Items: []
@@ -125,19 +91,9 @@ MonoBehaviour:
         m_Untranslated: 
       Text:
         m_Untranslated: 'Next: Player Customization Overview'
-      m_CodeSample: 
-      m_PostInstructionImage: {fileID: 0}
       m_Tutorial: {fileID: 11400000, guid: 51cece16d2f9c1445b6dfb1cd75a96ab, type: 2}
       m_Image: {fileID: 0}
-      m_VideoUrl: 
       m_Video: {fileID: 0}
-      m_Media:
-        m_ContentType: 0
-        m_Image: {fileID: 0}
-        m_VideoClip: {fileID: 0}
-        m_Url: 
-        m_AutoStart: 1
-        m_Loop: 1
       m_CriteriaCompletion: 0
       m_Criteria:
         m_Items: []
@@ -170,7 +126,6 @@ MonoBehaviour:
   DoneButton:
     m_Untranslated: Done
   m_CompletedSound: {fileID: 0}
-  m_FaqEntries: []
   m_AutoAdvance: 0
   Showing:
     m_PersistentCalls:

@@ -60,7 +60,7 @@ public class SimplePen : MonoBehaviour
 
     public void SetColor()
     {
-        if (XRINetworkGameManager.Instance.TryGetPlayerByID(m_NetworkInteractable.OwnerClientId, out XRINetworkPlayer player))
+        if (XRINetworkGameManager.Instance.GetPlayerByID(m_NetworkInteractable.OwnerClientId, out XRINetworkPlayer player))
         {
             m_CurrentColor = player.playerColor;
         }

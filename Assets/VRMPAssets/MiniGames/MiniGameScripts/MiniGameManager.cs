@@ -32,7 +32,7 @@ namespace XRMultiplayer.MiniGames
         /// <summary>
         /// Keeps track of the current game state synchronized across the network
         /// </summary>
-        readonly NetworkVariable<GameState> networkedGameState = new(GameState.PreGame, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        readonly NetworkVariable<GameState> networkedGameState = new(GameState.PreGame, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         /// <summary>
         /// Dictionary of players and their assigned scoreboard slots
@@ -93,7 +93,7 @@ namespace XRMultiplayer.MiniGames
         readonly List<ScoreboardSlot> m_ScoreboardSlots = new();
         NetworkList<ulong> m_CurrentPlayers;
         NetworkList<ulong> m_QueuedUpPlayers;
-        readonly NetworkVariable<float> m_BestAllScore = new(0.0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        readonly NetworkVariable<float> m_BestAllScore = new(0.0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         TeleportationProvider m_LocalPlayerTeleportProvider;
 
         float m_CurrentTimer = 0.0f;
@@ -178,7 +178,7 @@ namespace XRMultiplayer.MiniGames
             m_CurrentPlayers.OnListChanged += UpdatePlayerList;
             UpdateBestScore(m_BestAllScore.Value, m_BestAllText);
 
-            if (IsOwner)
+            if (IsServer)
             {
                 networkedGameState.Value = GameState.PreGame;
                 m_BestAllScore.Value = 0;
@@ -358,7 +358,7 @@ namespace XRMultiplayer.MiniGames
             StartCoroutine(m_PostGameRoutine);
             if (currentPlayerDictionary.Count <= 0)
             {
-                if (IsOwner)
+                if (IsServer)
                 {
                     networkedGameState.Value = GameState.PreGame;
                 }
@@ -375,7 +375,7 @@ namespace XRMultiplayer.MiniGames
                 yield return new WaitForSeconds(1);
             }
 
-            if (IsOwner)
+            if (IsServer)
             {
                 networkedGameState.Value = GameState.PreGame;
             }
@@ -385,14 +385,20 @@ namespace XRMultiplayer.MiniGames
         {
             if (other.TryGetComponent(out CharacterController controller))
             {
-                TogglePlayerReadyRpc(XRINetworkPlayer.LocalPlayer.OwnerClientId, entered);
+                TogglePlayerReadyServerRpc(XRINetworkPlayer.LocalPlayer.OwnerClientId, entered);
             }
         }
 
-        [Rpc(SendTo.Everyone)]
-        void TogglePlayerReadyRpc(ulong clientId, bool isReady)
+        [ServerRpc(RequireOwnership = false)]
+        void TogglePlayerReadyServerRpc(ulong clientId, bool isReady)
         {
-            if (XRINetworkGameManager.Instance.TryGetPlayerByID(clientId, out var player))
+            TogglePlayerReadyClientRpc(clientId, isReady);
+        }
+
+        [ClientRpc]
+        void TogglePlayerReadyClientRpc(ulong clientId, bool isReady)
+        {
+            if (XRINetworkGameManager.Instance.GetPlayerByID(clientId, out var player))
             {
                 if (currentPlayerDictionary.ContainsKey(player))
                 {
@@ -413,7 +419,7 @@ namespace XRMultiplayer.MiniGames
 
             foreach (var clientId in m_QueuedUpPlayers)
             {
-                if (XRINetworkGameManager.Instance.TryGetPlayerByID(clientId, out var player))
+                if (XRINetworkGameManager.Instance.GetPlayerByID(clientId, out var player))
                 {
                     if (currentPlayerDictionary.ContainsKey(player))
                     {
@@ -475,15 +481,15 @@ namespace XRMultiplayer.MiniGames
 
             m_GameStateText.text = $"Game Starting Now!";
 
-            if (IsOwner)
+            if (IsServer)
             {
                 m_DynamicButton.button.interactable = false;
-                StartGameOwnerRpc();
+                StartGameServerRpc();
             }
         }
 
-        [Rpc(SendTo.Owner)]
-        void StartGameOwnerRpc()
+        [ServerRpc(RequireOwnership = false)]
+        void StartGameServerRpc()
         {
             for (int i = 0; i < m_QueuedUpPlayers.Count; i++)
             {
@@ -493,8 +499,8 @@ namespace XRMultiplayer.MiniGames
             networkedGameState.Value = GameState.InGame;
         }
 
-        [Rpc(SendTo.Owner)]
-        public void StopGameOwnerRpc()
+        [ServerRpc(RequireOwnership = false)]
+        public void StopGameServerRpc()
         {
             networkedGameState.Value = GameState.PostGame;
             m_CurrentPlayers.Clear();
@@ -525,10 +531,16 @@ namespace XRMultiplayer.MiniGames
         /// <param name="score">The Score to set for the player.</param>
         /// <param name="clientId">Client ID of the player to set the score for.</param>
         /// <param name="finishGameOnScoreSubmit">Whether or not to finish the game on score submit.</param>
-        [Rpc(SendTo.Everyone)]
-        public void SubmitScoreRpc(float score, ulong clientId, bool finishGameOnScoreSubmit = false)
+        [ServerRpc(RequireOwnership = false)]
+        public void SubmitScoreServerRpc(float score, ulong clientId, bool finishGameOnScoreSubmit = false)
         {
-            if (XRINetworkGameManager.Instance.TryGetPlayerByID(clientId, out XRINetworkPlayer player))
+            SubmitScoreClientRpc(score, clientId, finishGameOnScoreSubmit);
+        }
+
+        [ClientRpc]
+        void SubmitScoreClientRpc(float score, ulong clientId, bool finishGameOnScoreSubmit = false)
+        {
+            if (XRINetworkGameManager.Instance.GetPlayerByID(clientId, out XRINetworkPlayer player))
             {
                 if (currentPlayerDictionary.ContainsKey(player))
                 {
@@ -560,9 +572,9 @@ namespace XRMultiplayer.MiniGames
                 }
             }
 
-            if (gameOver && IsOwner)
+            if (gameOver && IsServer)
             {
-                StopGameOwnerRpc();
+                StopGameServerRpc();
             }
         }
 
@@ -593,21 +605,46 @@ namespace XRMultiplayer.MiniGames
         public void AddLocalPlayer()
         {
             m_DynamicButton.button.interactable = false;
-            AddPlayerOwnerRpc(XRINetworkPlayer.LocalPlayer.OwnerClientId);
+            AddPlayerServerRpc(XRINetworkPlayer.LocalPlayer.OwnerClientId);
         }
 
-        [Rpc(SendTo.Owner)]
-        void AddPlayerOwnerRpc(ulong clientId)
+        /// <summary>
+        /// Called from UI buttons
+        /// </summary>
+        public void RemoveLocalPlayer()
         {
-            AddPlayerRpc(clientId);
+            m_DynamicButton.UpdateButton(AddLocalPlayer, "Join", false, false);
+            RemovePlayerServerRpc(XRINetworkPlayer.LocalPlayer.OwnerClientId);
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        void AddPlayerServerRpc(ulong clientId)
+        {
+            AddPlayerClientRpc(clientId);
             if (m_QueuedUpPlayers.Count < maxAllowedPlayers)
             {
                 m_QueuedUpPlayers.Add(clientId);
             }
         }
 
-        [Rpc(SendTo.Everyone)]
-        void AddPlayerRpc(ulong clientId)
+        [ServerRpc(RequireOwnership = false)]
+        void RemovePlayerServerRpc(ulong clientId)
+        {
+            RemovePlayerClientRpc(clientId);
+
+            if (m_QueuedUpPlayers.Contains(clientId))
+            {
+                m_QueuedUpPlayers.Remove(clientId);
+            }
+
+            if (m_CurrentPlayers.Contains(clientId))
+            {
+                m_CurrentPlayers.Remove(clientId);
+            }
+        }
+
+        [ClientRpc]
+        void AddPlayerClientRpc(ulong clientId)
         {
             if (currentPlayerDictionary.Count < maxAllowedPlayers)
             {
@@ -646,7 +683,7 @@ namespace XRMultiplayer.MiniGames
 
         void AddPlayerToList(ulong clientId)
         {
-            if (XRINetworkGameManager.Instance.TryGetPlayerByID(clientId, out XRINetworkPlayer player))
+            if (XRINetworkGameManager.Instance.GetPlayerByID(clientId, out XRINetworkPlayer player))
             {
                 if (!currentPlayerDictionary.ContainsKey(player))
                 {
@@ -658,35 +695,10 @@ namespace XRMultiplayer.MiniGames
             }
         }
 
-        /// <summary>
-        /// Called from UI buttons
-        /// </summary>
-        public void RemoveLocalPlayer()
+        [ClientRpc]
+        void RemovePlayerClientRpc(ulong clientId)
         {
-            m_DynamicButton.UpdateButton(AddLocalPlayer, "Join", false, false);
-            RemovePlayerOwnerRpc(XRINetworkPlayer.LocalPlayer.OwnerClientId);
-        }
-
-        [Rpc(SendTo.Owner)]
-        void RemovePlayerOwnerRpc(ulong clientId)
-        {
-            RemovePlayerRpc(clientId);
-
-            if (m_QueuedUpPlayers.Contains(clientId))
-            {
-                m_QueuedUpPlayers.Remove(clientId);
-            }
-
-            if (m_CurrentPlayers.Contains(clientId))
-            {
-                m_CurrentPlayers.Remove(clientId);
-            }
-        }
-
-        [Rpc(SendTo.Everyone)]
-        void RemovePlayerRpc(ulong clientId)
-        {
-            if (XRINetworkGameManager.Instance.TryGetPlayerByID(clientId, out XRINetworkPlayer player))
+            if (XRINetworkGameManager.Instance.GetPlayerByID(clientId, out XRINetworkPlayer player))
             {
                 CheckDroppedPlayer(player);
             }
@@ -744,9 +756,9 @@ namespace XRMultiplayer.MiniGames
                 if (currentPlayerDictionary.Count <= 0)
                 {
                     m_DynamicButton.button.interactable = false;
-                    if (IsOwner)
+                    if (IsServer)
                     {
-                        StopGameOwnerRpc();
+                        StopGameServerRpc();
                     }
                 }
                 else

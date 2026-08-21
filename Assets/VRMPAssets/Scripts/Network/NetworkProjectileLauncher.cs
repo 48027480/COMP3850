@@ -12,6 +12,10 @@ public class NetworkProjectileLauncher : NetworkBehaviour
     [Tooltip("The point that the project is created")]
     Transform m_StartPoint = null;
 
+    // [SerializeField]
+    // [Tooltip("The projectile that's created")]
+    // GameObject m_ProjectilePrefab = null;
+
     [SerializeField]
     [Tooltip("The speed at which the projectile is launched")]
     float m_LaunchSpeed = 1000f;

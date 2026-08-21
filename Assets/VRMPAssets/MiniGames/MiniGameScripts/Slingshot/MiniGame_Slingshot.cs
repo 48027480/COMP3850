@@ -81,7 +81,7 @@ namespace XRMultiplayer.MiniGames
             if (m_MiniGameManager.currentNetworkedGameState == MiniGameManager.GameState.InGame)
             {
                 m_CurrentPlayerScore += targetValue;
-                m_MiniGameManager.SubmitScoreRpc(m_CurrentPlayerScore, XRINetworkPlayer.LocalPlayer.OwnerClientId);
+                m_MiniGameManager.SubmitScoreServerRpc(m_CurrentPlayerScore, XRINetworkPlayer.LocalPlayer.OwnerClientId);
             }
         }
     }

@@ -12,13 +12,13 @@ namespace XRMultiplayer
         private void Start()
         {
             XRINetworkGameManager.Connected.Subscribe(OnConnectedUpdate);
-            XRINetworkGameManager.Instance.OnPlayerStateChanged += ConnectedPlayerStateChange;
+            XRINetworkGameManager.Instance.playerStateChanged += ConnectedPlayerStateChange;
         }
 
         private void OnDestroy()
         {
             XRINetworkGameManager.Connected.Unsubscribe(OnConnectedUpdate);
-            XRINetworkGameManager.Instance.OnPlayerStateChanged -= ConnectedPlayerStateChange;
+            XRINetworkGameManager.Instance.playerStateChanged -= ConnectedPlayerStateChange;
         }
 
         void OnConnectedUpdate(bool connected)

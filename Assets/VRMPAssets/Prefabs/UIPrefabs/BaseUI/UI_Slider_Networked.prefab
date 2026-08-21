@@ -109,17 +109,15 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 1
+  m_enableWordWrapping: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 1
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
-  m_ActiveFontFeatures: 00000000
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
-  m_EmojiFallbackSupport: 1
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0
@@ -444,8 +442,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GlobalObjectIdHash: 2537931997
   InScenePlacedSourceGlobalObjectIdHash: 3589412944
-  DeferredDespawnTick: 0
-  Ownership: 3
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
@@ -453,8 +449,6 @@ MonoBehaviour:
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
-  SyncOwnerTransformWhenParented: 1
-  AllowOwnerToParent: 0
 --- !u!114 &1039653788546865425
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -467,9 +461,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a5524c997ae7af4780b0aaa31b8ccc7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  m_BroadcastValueOnJoin: 0
-  m_ResetValueOnDespawn: 1
 --- !u!1 &7966554132829474694
 GameObject:
   m_ObjectHideFlags: 0

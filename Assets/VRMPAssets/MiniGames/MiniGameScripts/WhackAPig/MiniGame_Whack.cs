@@ -73,7 +73,7 @@ namespace XRMultiplayer.MiniGames
         public override void StartGame()
         {
             base.StartGame();
-            if (m_NetworkedGameplay.IsOwner)
+            if (m_NetworkedGameplay.IsServer)
             {
                 m_NetworkedGameplay.SpawnProcessServer();
             }
@@ -133,7 +133,7 @@ namespace XRMultiplayer.MiniGames
         {
             m_CurrentScore += pointValue;
             if (m_CurrentScore < 0) m_CurrentScore = 0;
-            m_MiniGameManager.SubmitScoreRpc(m_CurrentScore, XRINetworkPlayer.LocalPlayer.OwnerClientId);
+            m_MiniGameManager.SubmitScoreServerRpc(m_CurrentScore, XRINetworkPlayer.LocalPlayer.OwnerClientId);
         }
     }
 }

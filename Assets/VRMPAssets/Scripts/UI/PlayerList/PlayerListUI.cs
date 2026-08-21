@@ -35,7 +35,7 @@ namespace XRMultiplayer
 
         public void OnDestroy()
         {
-            XRINetworkGameManager.Instance.OnPlayerStateChanged -= ConnectedPlayerStateChange;
+            XRINetworkGameManager.Instance.playerStateChanged -= ConnectedPlayerStateChange;
             XRINetworkGameManager.Connected.Unsubscribe(OnConnected);
         }
 
@@ -53,7 +53,7 @@ namespace XRMultiplayer
                 Destroy(t.gameObject);
             }
 
-            XRINetworkGameManager.Instance.OnPlayerStateChanged += ConnectedPlayerStateChange;
+            XRINetworkGameManager.Instance.playerStateChanged += ConnectedPlayerStateChange;
             XRINetworkGameManager.Connected.Subscribe(OnConnected);
         }
 
@@ -98,13 +98,7 @@ namespace XRMultiplayer
             {
                 m_PlayerDictionary.Remove(slotToRemove);
                 Destroy(slotToRemove.gameObject);
-                var maxPlayers = XRINetworkGameManager.maxPlayers;
-
-                // If Connected via sessions, use the session's max players
-                if (XRINetworkGameManager.Instance.sessionManager.currentSession != null)
-                    maxPlayers = XRINetworkGameManager.maxPlayers;
-
-                m_PlayerCountText.text = $"{m_PlayerDictionary.Keys.Count}/{maxPlayers}";
+                m_PlayerCountText.text = $"{m_PlayerDictionary.Keys.Count}/{XRINetworkGameManager.Instance.lobbyManager.connectedLobby.MaxPlayers}";
             }
         }
 
@@ -113,7 +107,7 @@ namespace XRMultiplayer
             PlayerSlot slot = Instantiate(m_PlayerSlotPrefab, m_ConnectedPlayersViewportContentTransform).GetComponent<PlayerSlot>();
             slot.playerID = playerId;
 
-            if (XRINetworkGameManager.Instance.TryGetPlayerByID(playerId, out XRINetworkPlayer player))
+            if (XRINetworkGameManager.Instance.GetPlayerByID(playerId, out XRINetworkPlayer player))
             {
                 if (m_PlayerDictionary.TryAdd(slot, player))
                 {
@@ -125,13 +119,7 @@ namespace XRMultiplayer
                     }
                     slot.playerIconImage.color = player.playerColor;
 
-                    int maxPlayers = XRINetworkGameManager.maxPlayers;
-
-                    // If Connected via sessions, use the session's max players
-                    if (XRINetworkGameManager.Instance.sessionManager.currentSession != null)
-                        maxPlayers = XRINetworkGameManager.Instance.sessionManager.currentSession.MaxPlayers;
-
-                    m_PlayerCountText.text = $"{m_PlayerDictionary.Keys.Count}/{maxPlayers}";
+                    m_PlayerCountText.text = $"{m_PlayerDictionary.Keys.Count}/{XRINetworkGameManager.Instance.lobbyManager.connectedLobby.MaxPlayers}";
                 }
             }
             else

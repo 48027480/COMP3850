@@ -28,7 +28,7 @@ namespace XRMultiplayer
 
         void Start()
         {
-            XRINetworkGameManager.Instance.OnConnectionFailedAction += (reason) =>
+            XRINetworkGameManager.Instance.connectionFailedAction += (reason) =>
             {
                 ToggleNetworkObjects(false);
             };
@@ -36,7 +36,7 @@ namespace XRMultiplayer
 
         void OnDestroy()
         {
-            XRINetworkGameManager.Instance.OnConnectionFailedAction -= (reason) =>
+            XRINetworkGameManager.Instance.connectionFailedAction -= (reason) =>
             {
                 ToggleNetworkObjects(false);
             };

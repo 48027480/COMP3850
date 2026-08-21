@@ -151,36 +151,24 @@ namespace XRMultiplayer
 
         void SetupLocalHands()
         {
-            if (m_XRModalityManager.leftController != null)
-                m_LeftControllerTransformReference = m_XRModalityManager.leftController.transform;
-            if (m_XRModalityManager.rightController != null)
-                m_RightControllerTransformReference = m_XRModalityManager.rightController.transform;
+            m_LeftControllerTransformReference = m_XRModalityManager.leftController.transform;
+            m_RightControllerTransformReference = m_XRModalityManager.rightController.transform;
 
             if (m_XRModalityManager.leftHand == null)    //Rig doesn't have hands setup
             {
-                m_LeftHandTransformReference = m_LeftControllerTransformReference;
-                m_RightHandTransformReference = m_RightControllerTransformReference;
+                m_LeftHandTransformReference = m_XRModalityManager.leftController.transform;
+                m_RightHandTransformReference = m_XRModalityManager.rightController.transform;
                 SetTrackingType(XRInputModalityManager.InputMode.MotionController);
             }
             else    //Setup Hands and modality change listeners
             {
-                var leftHandSkeleton = m_XRModalityManager.leftHand.GetComponentInChildren<XRHandSkeletonDriver>();
-                var rightHandSkeleton = m_XRModalityManager.rightHand.GetComponentInChildren<XRHandSkeletonDriver>();
+                m_LeftHandTransformReference = m_XRModalityManager.leftHand.GetComponentInChildren<XRHandSkeletonDriver>().rootTransform;
+                m_RightHandTransformReference = m_XRModalityManager.rightHand.GetComponentInChildren<XRHandSkeletonDriver>().rootTransform;
 
-                if (leftHandSkeleton != null)
-                    m_LeftHandTransformReference = leftHandSkeleton.rootTransform;
+                SetTrackingType(XRInputModalityManager.currentInputMode.Value);
 
-                if (rightHandSkeleton != null)
-                    m_RightHandTransformReference = rightHandSkeleton.rootTransform;
-
-                // Setup tracking listening if either hand is tracked (hopefully to slightly future proof synchronous multimodality)
-                if (rightHandSkeleton != null || leftHandSkeleton != null)
-                {
-                    SetTrackingType(XRInputModalityManager.currentInputMode.Value);
-
-                    m_XRModalityManager.trackedHandModeStarted.AddListener(SwapToHands);
-                    m_XRModalityManager.motionControllerModeStarted.AddListener(SwapToControllers);
-                }
+                m_XRModalityManager.trackedHandModeStarted.AddListener(SwapToHands);
+                m_XRModalityManager.motionControllerModeStarted.AddListener(SwapToControllers);
             }
         }
 
@@ -206,8 +194,7 @@ namespace XRMultiplayer
 
             XRHandSkeletonDriver localLeftHandSkeleton = modalityMangager.leftHand.GetComponentInChildren<XRHandSkeletonDriver>();
             XRHandSkeletonDriver localRightHandSkeleton = modalityMangager.rightHand.GetComponentInChildren<XRHandSkeletonDriver>();
-            if (localLeftHandSkeleton == null || localRightHandSkeleton == null)
-                return;
+
 
             m_LocalHandFidelityOptions = new HandFidelityOption[2];
             for (int i = 0; i < m_LocalHandFidelityOptions.Length; i++)
@@ -374,12 +361,12 @@ namespace XRMultiplayer
 
                 if (m_UpdateHandsLocally)
                 {
-                    SyncNetworkCurl();
+                    GetNetworkCurl();
                 }
             }
             else
             {
-                SyncNetworkCurl();
+                GetNetworkCurl();
             }
         }
 
@@ -396,8 +383,7 @@ namespace XRMultiplayer
             }
         }
 
-        // Goes through the networked list and sets the local curl amount
-        void SyncNetworkCurl()
+        void GetNetworkCurl()
         {
             for (int i = 0; i < m_HandCurler[0].handFidelityOptions[0].fingerJoints.Length; i++)
             {
