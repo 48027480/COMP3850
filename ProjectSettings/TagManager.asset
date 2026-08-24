@@ -3,36 +3,31 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags:
-  - Projectile
-  - Target
-  - Anchor
-  - PlayerHand
-  - Destroyer
+  tags: []
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Item
   - Water
   - UI
+  - reserved6
+  - reserved7
+  - Interactive
   - Player
-  - Mirror
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - PlayerLocal
+  - Environment
+  - UiMenu
+  - Pickup
+  - PickupNoEnvironment
+  - StereoLeft
+  - StereoRight
+  - Walkthrough
+  - MirrorReflection
+  - InternalUI
+  - HardwareObjects
+  - reserved4
+  - reserved3
   - 
   - 
   - 
