@@ -12,7 +12,10 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - USE_COLOR_MASK
+  - USE_DETAIL_MAPS
   - USE_HUE_SHIFT
+  - USE_RIMLIGHT
   m_InvalidKeywords:
   - _EMISSION
   - _ENABLE_GEOMETRIC_SPECULAR_AA
@@ -22,7 +25,7 @@ Material:
   m_CustomRenderQueue: 2000
   stringTagMap: {}
   disabledShaderPasses: []
-  m_LockedProperties: 
+  m_LockedProperties: _HueShift
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -107,8 +110,8 @@ Material:
     - _DetailNormalMapScale: 1
     - _DetailUV: 0
     - _DstBlend: 0
-    - _EmissionHueShift: 5.18
-    - _EmissionStrength: 1.06
+    - _EmissionHueShift: 2.83
+    - _EmissionStrength: 0
     - _EmissionUV: 0
     - _EnableGeometricSpecularAA: 1
     - _GlossMapChannel: 3
@@ -116,7 +119,7 @@ Material:
     - _GlossStrength: 0.5
     - _Glossiness: 0.598
     - _GlossyReflections: 1
-    - _HueShift: 4.45
+    - _HueShift: 3.69
     - _HueShiftMaskChannel: 2
     - _LightmapType: 0
     - _LimitBrightness: 1
@@ -134,9 +137,9 @@ Material:
     - _Reflectance: 0.5
     - _RimAlbedoTint: 0
     - _RimEnvironmental: 0
-    - _RimIntensity: 0.5
-    - _RimRange: 0.3
-    - _RimSharpness: 0.1
+    - _RimIntensity: 0.637
+    - _RimRange: 0.615
+    - _RimSharpness: 0.423
     - _ShadowAlbedo: 0
     - _ShadowBoost: 0
     - _SmoothnessTextureChannel: 0
@@ -149,11 +152,11 @@ Material:
     - _VertexColor: 0
     - _ZWrite: 1
     m_Colors:
-    - _Color: {r: 0.16273585, g: 0.46856016, b: 0.5, a: 1}
+    - _Color: {r: 0.6320754, g: 0.5043527, b: 0.19975968, a: 1}
     - _ColorMaskColor1: {r: 1, g: 1, b: 1, a: 1}
     - _ColorMaskColor2: {r: 1, g: 1, b: 1, a: 1}
     - _ColorMaskColor3: {r: 1, g: 1, b: 1, a: 1}
     - _ColorMaskColor4: {r: 1, g: 1, b: 1, a: 1}
-    - _EmissionColor: {r: 0.6509434, g: 0.24256852, b: 0.41477612, a: 1}
-    - _RimColor: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 0.5283019, g: 0.28657886, b: 0.2913127, a: 1}
+    - _RimColor: {r: 1, g: 0.23113209, b: 0.23113209, a: 1}
   m_BuildTextureStacks: []
