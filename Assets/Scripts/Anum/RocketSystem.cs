@@ -8,72 +8,89 @@ public class RocketSystem : UdonSharpBehaviour
 {
     public int seatCapacity = 3;
     public float flightDurationSeconds = 180f;
-    public bool useFixedSchedule = false;
-    public float fixedScheduleSeconds = 300f;
 
     public TMP_Text capacityDisplay;
-    public Transform destinationPoint;
+    public Transform[] destinationPoints; // same length/order as seats[]
     public Animator rocketAnimator;
     public AudioSource engineAudioSource;
     public AudioClip launchSound;
     public AudioClip flightLoopSound;
     public AudioClip landingSound;
+    public AudioClip launchAnnouncementSound;
+    public AudioClip landingAnnouncementSound;
 
-    [UdonSynced] public int boardedCount = 0;
+    public VRCStation[] seats; // assign every seat in this room, length == seatCapacity
+
+    [UdonSynced] public int roomOccupancy = 0;   // for the sign outside — anyone in the room
+    [UdonSynced] public int seatedCount = 0;      // for launch logic — players actually seated
     [UdonSynced] public bool isLaunching = false;
 
-    public bool localPlayerBoarded = false;
-    public float scheduleTimer = 0f;
+    public bool localPlayerInRoom = false;
+    public bool localPlayerSeated = false;
+    private VRCStation localSeat;
 
     void Start()
     {
-        capacityDisplay.text = boardedCount + " / " + seatCapacity + " players boarded";
+        UpdateDisplay();
     }
 
-    void Update()
-    {
-        if (useFixedSchedule && !isLaunching)
-        {
-            scheduleTimer += Time.deltaTime;
-
-            if (scheduleTimer >= fixedScheduleSeconds)
-            {
-                scheduleTimer = 0f;
-                Networking.SetOwner(Networking.LocalPlayer, gameObject);
-                LaunchRocket();
-            }
-        }
-    }
+    // ---------- Room occupancy (display only) ----------
 
     public override void OnPlayerTriggerEnter(VRCPlayerApi player)
     {
-        if (player.isLocal)
+        if (player.isLocal && !isLaunching)
         {
             Networking.SetOwner(Networking.LocalPlayer, gameObject);
-
-            boardedCount = boardedCount + 1;
-            localPlayerBoarded = true;
+            roomOccupancy = roomOccupancy + 1;
+            localPlayerInRoom = true;
             RequestSerialization();
-            capacityDisplay.text = boardedCount + " / " + seatCapacity + " players boarded";
-
-            if (!useFixedSchedule && boardedCount >= seatCapacity)
-            {
-                LaunchRocket();
-            }
+            UpdateDisplay();
         }
     }
 
     public override void OnPlayerTriggerExit(VRCPlayerApi player)
     {
-        if (player.isLocal)
+        if (player.isLocal && !isLaunching)
         {
             Networking.SetOwner(Networking.LocalPlayer, gameObject);
-            boardedCount = boardedCount - 1;
-            localPlayerBoarded = false;
+            roomOccupancy = roomOccupancy - 1;
+            localPlayerInRoom = false;
             RequestSerialization();
-            capacityDisplay.text = boardedCount + " / " + seatCapacity + " players boarded";
+            UpdateDisplay();
         }
     }
+
+    // ---------- Seat occupancy (launch logic) ----------
+
+    public void SeatOccupied(VRCStation seat)
+    {
+        if (isLaunching) return;
+
+        Networking.SetOwner(Networking.LocalPlayer, gameObject);
+
+        seatedCount = seatedCount + 1;
+        localPlayerSeated = true;
+        localSeat = seat;
+        RequestSerialization();
+
+        if (seatedCount >= seatCapacity)
+        {
+            LaunchRocket();
+        }
+    }
+
+    public void SeatVacated()
+    {
+        if (isLaunching) return;
+
+        Networking.SetOwner(Networking.LocalPlayer, gameObject);
+        seatedCount = seatedCount - 1;
+        localPlayerSeated = false;
+        localSeat = null;
+        RequestSerialization();
+    }
+
+    // ---------- Launch sequence ----------
 
     public void LaunchRocket()
     {
@@ -81,28 +98,53 @@ public class RocketSystem : UdonSharpBehaviour
         RequestSerialization();
         capacityDisplay.text = "In flight...";
 
+        for (int i = 0; i < seats.Length; i++)
+        {
+            seats[i].disableStationExit = true;
+        }
+
         rocketAnimator.SetTrigger("Launch");
         engineAudioSource.PlayOneShot(launchSound);
+        engineAudioSource.PlayOneShot(launchAnnouncementSound);
 
         engineAudioSource.clip = flightLoopSound;
         engineAudioSource.loop = true;
         engineAudioSource.PlayScheduled(AudioSettings.dspTime + 1.5);
 
-        if (localPlayerBoarded)
+        if (localPlayerSeated)
         {
             Networking.LocalPlayer.PlayHapticEventInHand(VRC_Pickup.PickupHand.Left, 0.5f, 0.8f, 0.5f);
         }
 
-        SendCustomEventDelayedSeconds(nameof(TeleportIfBoarded), 3f);
+        SendCustomEventDelayedSeconds(nameof(TeleportIfBoarded), flightDurationSeconds - 3f);
         SendCustomEventDelayedSeconds(nameof(PlayLandingEffects), flightDurationSeconds - 3f);
         SendCustomEventDelayedSeconds(nameof(ResetRoom), flightDurationSeconds);
     }
 
     public void TeleportIfBoarded()
     {
-        if (localPlayerBoarded)
+        if (localPlayerSeated)
         {
-            Networking.LocalPlayer.TeleportTo(destinationPoint.position, destinationPoint.rotation);
+            int seatIndex = -1;
+            for (int i = 0; i < seats.Length; i++)
+            {
+                if (seats[i] == localSeat)
+                {
+                    seatIndex = i;
+                    break;
+                }
+            }
+
+            Transform target = (seatIndex >= 0 && seatIndex < destinationPoints.Length)
+                ? destinationPoints[seatIndex]
+                : destinationPoints[0]; // fallback if something goes wrong
+
+            Networking.LocalPlayer.TeleportTo(target.position, target.rotation);
+
+            if (localSeat != null)
+            {
+                localSeat.ExitStation(Networking.LocalPlayer);
+            }
         }
     }
 
@@ -111,8 +153,9 @@ public class RocketSystem : UdonSharpBehaviour
         rocketAnimator.SetTrigger("Land");
         engineAudioSource.loop = false;
         engineAudioSource.PlayOneShot(landingSound);
+        engineAudioSource.PlayOneShot(landingAnnouncementSound);
 
-        if (localPlayerBoarded)
+        if (localPlayerSeated)
         {
             Networking.LocalPlayer.PlayHapticEventInHand(VRC_Pickup.PickupHand.Right, 0.5f, 1.0f, 0.5f);
         }
@@ -120,16 +163,30 @@ public class RocketSystem : UdonSharpBehaviour
 
     public void ResetRoom()
     {
-        boardedCount = 0;
+        roomOccupancy = 0;
+        seatedCount = 0;
         isLaunching = false;
-        localPlayerBoarded = false;
+        localPlayerInRoom = false;
+        localPlayerSeated = false;
+        localSeat = null;
         engineAudioSource.Stop();
+
+        for (int i = 0; i < seats.Length; i++)
+        {
+            seats[i].disableStationExit = false;
+        }
+
         RequestSerialization();
-        capacityDisplay.text = boardedCount + " / " + seatCapacity + " players boarded";
+        UpdateDisplay();
+    }
+
+    private void UpdateDisplay()
+    {
+        capacityDisplay.text = roomOccupancy + " / " + seatCapacity + " players boarded";
     }
 
     public override void OnDeserialization()
     {
-        capacityDisplay.text = boardedCount + " / " + seatCapacity + " players boarded";
+        UpdateDisplay();
     }
 }
