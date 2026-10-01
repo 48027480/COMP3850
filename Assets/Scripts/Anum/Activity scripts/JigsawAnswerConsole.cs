@@ -3,6 +3,7 @@ using UnityEngine;
 using VRC.SDKBase;
 using VRC.Udon;
 using TMPro;
+using UnityEngine.UI;
 
 [UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
 public class JigsawAnswerConsole : UdonSharpBehaviour
@@ -145,13 +146,39 @@ public class JigsawAnswerConsole : UdonSharpBehaviour
 
     void UpdateStatus(string msg)
     {
-        if (statusText == null) return;
-
         string current = "Nothing chosen yet.";
         if (picked >= 0 && puzzleBank != null && puzzle >= 0)
             current = "Your group picked: " + puzzleBank.GetOption(puzzle, picked);
 
+        if (statusText == null) { ShowPicked(); return; }
+
         if (msg == "") statusText.text = current;
         else statusText.text = current + "\n" + msg;
+
+        ShowPicked();
+    }
+
+    void ShowPicked()
+    {
+        if (puzzleBank == null || puzzle < 0) return;
+
+        for (int i = 0; i < optionTexts.Length && i < 4; i++)
+        {
+            if (optionTexts[i] == null) continue;
+
+            string label = puzzleBank.GetOption(puzzle, i);
+            Image bg = optionTexts[i].transform.parent.GetComponent<Image>();
+
+            if (i == picked)
+            {
+                optionTexts[i].text = "<b>" + label + "</b>";
+                if (bg != null) bg.color = new Color(0.55f, 0.75f, 1f);
+            }
+            else
+            {
+                optionTexts[i].text = label;
+                if (bg != null) bg.color = Color.white;
+            }
+        }
     }
 }
