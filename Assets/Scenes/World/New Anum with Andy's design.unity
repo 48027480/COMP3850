@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028331, g: 0.2257133, b: 0.3069217, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -147209,7 +147209,7 @@ MonoBehaviour:
   SynchronizePosition: 0
   AllowCollisionOwnershipTransfer: 0
   Reliable: 0
-  _syncMethod: 2
+  _syncMethod: 1
   serializedProgramAsset: {fileID: 11400000, guid: d222eb50509f15f4ba197682fd1fe67e,
     type: 2}
   programSource: {fileID: 11400000, guid: fbdaa56d33c5a4d49954ead58ad09347, type: 2}
@@ -147238,12 +147238,20 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 938406859}
+  rocket: {fileID: 0}
   doorTransform: {fileID: 413204068}
-  pivotPoint: {x: -2.980001, y: 2.0683, z: 0}
-  rotationAxis: {x: 0, y: 1, z: 0}
+  approachZone: {fileID: 0}
+  hingeLocal: {x: 0, y: 0, z: 0}
+  hingeAxisLocal: {x: 0, y: 1, z: 0}
+  closedLocalPos: {x: 0, y: 0, z: 0}
+  closedLocalRot: {x: 0, y: 0, z: 0, w: 1}
   openAngle: 100
-  speed: 90
+  hasSavedOpenPose: 0
+  savedOpenPos: {x: 0, y: 0, z: 0}
+  savedOpenRot: {x: 0, y: 0, z: 0, w: 1}
+  openSeconds: 1.2
   closeDelay: 1
+  checkInterval: 0.2
 --- !u!1 &939239651
 GameObject:
   m_ObjectHideFlags: 0
@@ -291671,7 +291679,7 @@ MonoBehaviour:
   SynchronizePosition: 0
   AllowCollisionOwnershipTransfer: 0
   Reliable: 0
-  _syncMethod: 2
+  _syncMethod: 1
   serializedProgramAsset: {fileID: 11400000, guid: d222eb50509f15f4ba197682fd1fe67e,
     type: 2}
   programSource: {fileID: 11400000, guid: fbdaa56d33c5a4d49954ead58ad09347, type: 2}
@@ -291700,12 +291708,20 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1889242735}
+  rocket: {fileID: 0}
   doorTransform: {fileID: 1374607885}
-  pivotPoint: {x: -2.980001, y: 2.0683, z: 0}
-  rotationAxis: {x: 0, y: 1, z: 0}
+  approachZone: {fileID: 0}
+  hingeLocal: {x: 0, y: 0, z: 0}
+  hingeAxisLocal: {x: 0, y: 1, z: 0}
+  closedLocalPos: {x: 0, y: 0, z: 0}
+  closedLocalRot: {x: 0, y: 0, z: 0, w: 1}
   openAngle: 100
-  speed: 90
+  hasSavedOpenPose: 0
+  savedOpenPos: {x: 0, y: 0, z: 0}
+  savedOpenRot: {x: 0, y: 0, z: 0, w: 1}
+  openSeconds: 1.2
   closeDelay: 1
+  checkInterval: 0.2
 --- !u!1 &1889475132
 GameObject:
   m_ObjectHideFlags: 0
@@ -294878,6 +294894,11 @@ PrefabInstance:
       propertyPath: _syncMethod
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 1709796656093347344, guid: 8a6aef7856563fc4384a4e2076bdb7bd,
+        type: 3}
+      propertyPath: m_fontStyle
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1714882769568163511, guid: 8a6aef7856563fc4384a4e2076bdb7bd,
         type: 3}
       propertyPath: m_LocalScale.y
@@ -295058,6 +295079,16 @@ PrefabInstance:
       propertyPath: m_LocalPosition.y
       value: 9.9
       objectReference: {fileID: 0}
+    - target: {fileID: 3673768430607767784, guid: 8a6aef7856563fc4384a4e2076bdb7bd,
+        type: 3}
+      propertyPath: m_fontStyle
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3849506609708684465, guid: 8a6aef7856563fc4384a4e2076bdb7bd,
+        type: 3}
+      propertyPath: m_fontStyle
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3941962502113629391, guid: 8a6aef7856563fc4384a4e2076bdb7bd,
         type: 3}
       propertyPath: m_IsActive
@@ -295142,6 +295173,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5014507488050076263, guid: 8a6aef7856563fc4384a4e2076bdb7bd,
+        type: 3}
+      propertyPath: m_fontStyle
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 5572597234315959298, guid: 8a6aef7856563fc4384a4e2076bdb7bd,
         type: 3}
@@ -295432,6 +295468,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalPosition.z
       value: -23
+      objectReference: {fileID: 0}
+    - target: {fileID: 8759519310495708441, guid: 8a6aef7856563fc4384a4e2076bdb7bd,
+        type: 3}
+      propertyPath: m_fontStyle
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8948782375861360862, guid: 8a6aef7856563fc4384a4e2076bdb7bd,
         type: 3}
