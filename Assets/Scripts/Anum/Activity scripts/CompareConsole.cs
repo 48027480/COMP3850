@@ -20,6 +20,9 @@ public class CompareConsole : UdonSharpBehaviour
     public TextMeshProUGUI statusText;
     public bool needBrief = true;
 
+    public float autoResetDelay = 15f;
+    public GameObject resetButton;
+
     [UdonSynced] int puzzle = -1;
     [UdonSynced] int reason = -1;
 
@@ -27,6 +30,16 @@ public class CompareConsole : UdonSharpBehaviour
 
     void Start()
     {
+        if (resetButton == null && questionText != null && questionText.transform.parent != null)
+        {
+            Transform t = questionText.transform.parent.Find("NextGroupButton");
+            if (t != null) resetButton = t.gameObject;
+        }
+        if (resetButton != null) resetButton.SetActive(false);
+
+        if (objectA != null) objectA.partner = objectB;
+        if (objectB != null) objectB.partner = objectA;
+
         if (puzzleBank == null) return;
 
         if (Networking.IsOwner(gameObject) && puzzle < 0)
@@ -75,17 +88,25 @@ public class CompareConsole : UdonSharpBehaviour
 
         SetReason(-1);
 
+        string next = "A new topic starts in " + Mathf.RoundToInt(autoResetDelay) + " seconds.";
         if (right)
         {
             tracker.Correct();
-            UpdateStatus("You got it together.");
+            UpdateStatus("You got it together. " + next);
         }
         else
         {
             tracker.Wrong();
-            if (tracker.IsDone()) UpdateStatus("The guide has revealed the answer. Press Next group for a new topic.");
+            if (tracker.IsDone()) UpdateStatus("The guide has revealed the answer. " + next);
             else UpdateStatus("Not quite. Check the guide's hint and talk it through.");
         }
+        if (tracker.IsDone()) SendCustomEventDelayedSeconds(nameof(AutoReset), autoResetDelay);
+    }
+
+    public void AutoReset()
+    {
+        if (tracker == null || !tracker.IsDone()) return;
+        ResetActivity();
     }
 
     public void ResetActivity()

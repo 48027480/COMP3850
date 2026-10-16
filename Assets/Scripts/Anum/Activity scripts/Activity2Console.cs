@@ -19,9 +19,11 @@ public class Activity2Console : UdonSharpBehaviour
     public GameObject submitButton;
     public GameObject resetButton;
 
-    // Hidden until a wrong submit unlocks them. Found next to the Submit button if left empty.
     public GameObject hint1Button;
     public GameObject hint2Button;
+    public GameObject revealButton;
+
+    public float autoResetDelay = 15f;
 
     public ParticleSystem celebrationParticles;
     public AudioSource celebrationAudio;
@@ -41,7 +43,6 @@ public class Activity2Console : UdonSharpBehaviour
     public int maxPerPlayer = 2;
     public int minPlayers = 3;
 
-    // Tick in the Inspector to complete the activity alone. Untick before uploading.
     public bool soloTestMode = false;
 
     bool celebratedLocally = false;
@@ -61,6 +62,21 @@ public class Activity2Console : UdonSharpBehaviour
                 Transform t = row.Find("Hint2Button");
                 if (t != null) hint2Button = t.gameObject;
             }
+            if (revealButton == null)
+            {
+                Transform t = row.Find("RevealButton");
+                if (t != null) revealButton = t.gameObject;
+            }
+            if (resetButton == null)
+            {
+                Transform t = row.Find("ResetButton");
+                if (t != null) resetButton = t.gameObject;
+            }
+        }
+        if (revealButton != null)
+        {
+            TextMeshProUGUI label = revealButton.GetComponentInChildren<TextMeshProUGUI>(true);
+            if (label != null) label.text = "HINT";
         }
 
         UpdateUI();
@@ -127,8 +143,10 @@ public class Activity2Console : UdonSharpBehaviour
         if (feedbackText != null)
             feedbackText.text = soloTestMode ? "[SOLO TEST MODE]\n" + sharedFeedback : sharedFeedback;
         if (submitButton != null) submitButton.SetActive(showSubmit);
-        if (hint1Button != null) hint1Button.SetActive(!puzzleDone && wrongAttempts >= 1);
-        if (hint2Button != null) hint2Button.SetActive(!puzzleDone && wrongAttempts >= 2);
+        if (hint1Button != null) hint1Button.SetActive(false);
+        if (hint2Button != null) hint2Button.SetActive(false);
+        if (revealButton != null) revealButton.SetActive(!puzzleDone && wrongAttempts >= 1);
+        if (resetButton != null) resetButton.SetActive(false);
     }
 
     public int FindNearestOpenSlot(Vector3 position, float maxDist)
@@ -274,17 +292,17 @@ public class Activity2Console : UdonSharpBehaviour
         if (correct)
         {
             puzzleDone = true;
-            sharedFeedback = bank.correctText[currentPuzzle];
+            sharedFeedback = bank.correctText[currentPuzzle] + "\nA new puzzle starts in " + Mathf.RoundToInt(autoResetDelay) + " seconds.";
             showSubmit = false;
             RequestSerialization();
             UpdateUI();
             Celebrate();
+            SendCustomEventDelayedSeconds(nameof(AutoReset), autoResetDelay);
         }
         else
         {
             wrongAttempts++;
             sharedFeedback = "Not quite. Pick up the spheres to rearrange them, then submit again.";
-            // Wrong answers unlock the hints: first wrong shows hint 1, later ones show hint 2
             sharedHint = wrongAttempts == 1 ? bank.hint1[currentPuzzle] : bank.hint2[currentPuzzle];
             RequestSerialization();
             UpdateUI();
@@ -317,13 +335,20 @@ public class Activity2Console : UdonSharpBehaviour
 
     public void OnReveal()
     {
-        if (bank == null || currentPuzzle < 0) return;
+        if (bank == null || currentPuzzle < 0 || puzzleDone) return;
+        if (wrongAttempts < 1) return;
         if (!Networking.IsOwner(gameObject))
             Networking.SetOwner(Networking.LocalPlayer, gameObject);
 
-        sharedFeedback = bank.revealText[currentPuzzle];
+        sharedHint = wrongAttempts >= 2 ? bank.hint2[currentPuzzle] : bank.hint1[currentPuzzle];
         RequestSerialization();
         UpdateUI();
+    }
+
+    public void AutoReset()
+    {
+        if (!puzzleDone || !Networking.IsOwner(gameObject)) return;
+        ResetActivity();
     }
 
     public void ResetActivity()

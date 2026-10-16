@@ -17,6 +17,9 @@ public class JigsawAnswerConsole : UdonSharpBehaviour
     public TextMeshProUGUI statusText;
     public bool needAllClues = true;
 
+    public float autoResetDelay = 15f;
+    public GameObject resetButton;
+
     [UdonSynced] int puzzle = -1;
     [UdonSynced] int picked = -1;
 
@@ -24,6 +27,13 @@ public class JigsawAnswerConsole : UdonSharpBehaviour
 
     void Start()
     {
+        if (resetButton == null && questionText != null && questionText.transform.parent != null)
+        {
+            Transform t = questionText.transform.parent.Find("ResetButton");
+            if (t != null) resetButton = t.gameObject;
+        }
+        if (resetButton != null) resetButton.SetActive(false);
+
         if (puzzleBank == null) return;
 
         if (Networking.IsOwner(gameObject) && puzzle < 0)
@@ -62,6 +72,18 @@ public class JigsawAnswerConsole : UdonSharpBehaviour
         else tracker.Wrong();
 
         Pick(-1);
+
+        if (tracker.IsDone())
+        {
+            UpdateStatus("A new puzzle starts in " + Mathf.RoundToInt(autoResetDelay) + " seconds.");
+            SendCustomEventDelayedSeconds(nameof(AutoReset), autoResetDelay);
+        }
+    }
+
+    public void AutoReset()
+    {
+        if (tracker == null || !tracker.IsDone()) return;
+        ResetActivity();
     }
 
     public void ResetActivity()

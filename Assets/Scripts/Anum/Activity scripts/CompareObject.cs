@@ -13,21 +13,24 @@ public class CompareObject : UdonSharpBehaviour
     public GameObject infoCard;
     public TextMeshProUGUI infoText;
 
-    // The label and card float above the orb, upright and turned to face whoever is looking
     public Transform labelCanvas;
     public float labelHeight = 0.2f;
     public float cardHeight = 0.42f;
 
-    // Dropped anywhere over the table, the orb settles onto the answer pedestal
     public Transform snapPoint;
     public float snapRange = 1.3f;
     public float snapHeight = 0.8f;
+    public CompareObject partner;
 
     string label = "";
     string info = "";
+    Vector3 homePos;
+    Quaternion homeRot;
 
     void Start()
     {
+        homePos = transform.position;
+        homeRot = transform.rotation;
         if (infoCard != null) infoCard.SetActive(false);
     }
 
@@ -37,8 +40,24 @@ public class CompareObject : UdonSharpBehaviour
         if (local == null) return;
         Vector3 head = local.GetTrackingData(VRCPlayerApi.TrackingDataType.Head).position;
 
-        if (labelCanvas != null) Float(labelCanvas, labelHeight, head);
-        if (infoCard != null && infoCard.activeSelf) Float(infoCard.transform, cardHeight, head);
+        if (labelCanvas != null && labelCanvas.gameObject.activeSelf) Float(labelCanvas, labelHeight, head);
+        if (infoCard != null && infoCard.activeSelf)
+            InView(infoCard.transform, head, local.GetTrackingData(VRCPlayerApi.TrackingDataType.Head).rotation);
+    }
+
+    public float panelDistance = 1.2f;
+    public float panelDrop = 0.15f;
+
+    void InView(Transform t, Vector3 head, Quaternion headRot)
+    {
+        Vector3 fwd = headRot * Vector3.forward;
+        fwd.y = 0f;
+        if (fwd.sqrMagnitude < 0.001f) fwd = Vector3.forward;
+        fwd.Normalize();
+
+        Vector3 pos = head + fwd * panelDistance + Vector3.down * panelDrop;
+        t.position = pos;
+        t.rotation = Quaternion.LookRotation(pos - head);
     }
 
     void Float(Transform t, float height, Vector3 head)
@@ -60,23 +79,39 @@ public class CompareObject : UdonSharpBehaviour
     public override void OnPickup()
     {
         if (infoCard != null) infoCard.SetActive(true);
+        if (labelCanvas != null) labelCanvas.gameObject.SetActive(false);
     }
 
     public override void OnDrop()
     {
         if (infoCard != null) infoCard.SetActive(false);
-        SnapToPedestal();
+        if (labelCanvas != null) labelCanvas.gameObject.SetActive(true);
+        if (!SnapToPedestal()) MoveTo(homePos, homeRot);
     }
 
-    void SnapToPedestal()
+    bool SnapToPedestal()
     {
-        if (snapPoint == null) return;
+        if (snapPoint == null) return false;
 
         Vector3 d = transform.position - snapPoint.position;
-        if (Mathf.Abs(d.y) > snapHeight) return;
-        if (new Vector2(d.x, d.z).magnitude > snapRange) return;
+        if (Mathf.Abs(d.y) > snapHeight) return false;
+        if (new Vector2(d.x, d.z).magnitude > snapRange) return false;
 
-        transform.SetPositionAndRotation(snapPoint.position, Quaternion.identity);
+        if (partner != null && Vector3.Distance(partner.transform.position, snapPoint.position) < 0.3f)
+            partner.SendCustomNetworkEvent(NetworkEventTarget.Owner, nameof(GoHome));
+
+        MoveTo(snapPoint.position, Quaternion.identity);
+        return true;
+    }
+
+    public void GoHome()
+    {
+        MoveTo(homePos, homeRot);
+    }
+
+    void MoveTo(Vector3 p, Quaternion r)
+    {
+        transform.SetPositionAndRotation(p, r);
         VRCObjectSync sync = (VRCObjectSync)GetComponent(typeof(VRCObjectSync));
         if (sync != null) sync.FlagDiscontinuity();
     }
@@ -95,5 +130,6 @@ public class CompareObject : UdonSharpBehaviour
         if (sync != null) sync.Respawn();
 
         if (infoCard != null) infoCard.SetActive(false);
+        if (labelCanvas != null) labelCanvas.gameObject.SetActive(true);
     }
 }
