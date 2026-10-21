@@ -8,31 +8,30 @@ public class RocketSeat : UdonSharpBehaviour
     public RocketSystem rocketSystem;
     public VRCStation station;
 
-    private bool localPlayerHere = false;
-
     public override void OnPlayerTriggerEnter(VRCPlayerApi player)
     {
-        if (player.isLocal && !localPlayerHere)
-        {
-            localPlayerHere = true;
-            station.UseStation(player);
-        }
+        if (!player.isLocal) return;
+        if (rocketSystem.isLaunching) return;
+        if (rocketSystem.localPlayerSeated) return;
+
+        station.UseStation(player);
     }
 
     public override void OnStationEntered(VRCPlayerApi player)
     {
         if (player.isLocal)
         {
-            rocketSystem.SeatOccupied(station);
+            rocketSystem.LocalSatDown(station);
         }
+        rocketSystem.SomeoneSatDown();
     }
 
     public override void OnStationExited(VRCPlayerApi player)
     {
         if (player.isLocal)
         {
-            localPlayerHere = false;
-            rocketSystem.SeatVacated();
+            rocketSystem.LocalStoodUp();
         }
+        rocketSystem.SomeoneStoodUp();
     }
 }
