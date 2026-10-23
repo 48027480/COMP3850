@@ -49,7 +49,7 @@ public class RocketDisplay : UdonSharpBehaviour
 
             string label = (i < rocketLabels.Length) ? rocketLabels[i] : ("Rocket " + (i + 1));
             string status;
-            if (r.isLaunching)
+            if (r.flying)
             {
                 if (launchStart[i] < 0f) launchStart[i] = Time.time;
                 float left = r.flightDurationSeconds - (Time.time - launchStart[i]);

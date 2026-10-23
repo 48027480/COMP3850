@@ -39,7 +39,7 @@ public class ZeroGFloat : UdonSharpBehaviour
         }
         if (arrival) PlaceAll(landPos, landRot);
         else PlaceAll(restPos, restRot);
-        if (rocket != null && rocket.isLaunching)
+        if (rocket != null && rocket.flying)
         {
             wasFlying = true;
             launchedAt = Time.time;
@@ -50,7 +50,7 @@ public class ZeroGFloat : UdonSharpBehaviour
     void Update()
     {
         if (arrival || items == null || phase == null) return;
-        bool flying = rocket != null && rocket.isLaunching;
+        bool flying = rocket != null && rocket.flying;
 
         if (flying && !wasFlying)
         {

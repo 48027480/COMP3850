@@ -3,8 +3,8 @@ using UnityEngine;
 using TMPro;
 using VRC.SDKBase;
 using VRC.Udon;
-using VRC.Udon.Common.Interfaces;
 
+[UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
 public class RocketSystem : UdonSharpBehaviour
 {
     public int seatCapacity = 3;
@@ -23,31 +23,37 @@ public class RocketSystem : UdonSharpBehaviour
     public VRCStation[] seats;
 
     [UdonSynced] public int roomOccupancy = 0;
-    [UdonSynced] public int seatedCount = 0;
-    [UdonSynced] public bool isLaunching = false;
 
     public bool localPlayerInRoom = false;
     public bool localPlayerSeated = false;
-    private VRCStation localSeat;
+    public bool flying = false;
+    // How many seats are filled, for RocketDisplay and RocketGate to read; the launch decision uses seatFilled
+    public int seatedCount = 0;
+
+    private bool[] seatFilled;
     private int localSeatIndex = -1;
-    private bool flying = false;
-    private Transform teleportTarget;
+    private Transform arrivalTarget;
+    private int arrivalChecks = 0;
+    private bool arrivalStarted = false;
+    private float launchTime = -1000f;
 
     void Start()
     {
+        seatFilled = new bool[seats.Length];
         UpdateDisplay();
     }
 
+    // The landing starts this long before the passengers step out, so they feel and hear it first
+    const float LandingLead = 6f;
+
     public override void OnPlayerTriggerEnter(VRCPlayerApi player)
     {
-        if (player.isLocal)
-        {
-            localPlayerInRoom = true;
-        }
+        if (!player.isLocal) return;
+        localPlayerInRoom = true;
 
-        if (!Networking.IsOwner(gameObject)) return;
-        if (isLaunching) return;
+        if (flying) return;
 
+        Networking.SetOwner(Networking.LocalPlayer, gameObject);
         roomOccupancy = roomOccupancy + 1;
         RequestSerialization();
         UpdateDisplay();
@@ -55,82 +61,96 @@ public class RocketSystem : UdonSharpBehaviour
 
     public override void OnPlayerTriggerExit(VRCPlayerApi player)
     {
-        if (player.isLocal)
-        {
-            localPlayerInRoom = false;
-        }
+        if (!player.isLocal) return;
+        localPlayerInRoom = false;
 
-        if (!Networking.IsOwner(gameObject)) return;
-        if (isLaunching) return;
+        if (flying) return;
 
+        Networking.SetOwner(Networking.LocalPlayer, gameObject);
         roomOccupancy = roomOccupancy - 1;
         if (roomOccupancy < 0) roomOccupancy = 0;
         RequestSerialization();
         UpdateDisplay();
     }
 
-    public void LocalSatDown(VRCStation seat)
+    public void LocalSatDown(int seatIndex)
     {
         localPlayerSeated = true;
-        localSeat = seat;
-        localSeatIndex = 0;
-
-        for (int i = 0; i < seats.Length; i++)
-        {
-            if (seats[i] == seat)
-            {
-                localSeatIndex = i;
-            }
-        }
+        localSeatIndex = seatIndex;
+        Log("you sat in seat " + seatIndex + (flying ? " (rocket still marked in flight)" : ""));
     }
 
     public void LocalStoodUp()
     {
+        if (localPlayerSeated) Log("you left seat " + localSeatIndex);
         localPlayerSeated = false;
-        localSeat = null;
         localSeatIndex = -1;
     }
 
-    public void SomeoneSatDown()
+    // Safety net: a rocket still marked in flight well after its flight ended (its reset never ran) is
+    // reset before anyone boards, so it can never be left stuck. RocketSeat asks this before seating someone
+    public bool ReadyToBoard()
     {
-        if (!Networking.IsOwner(gameObject)) return;
-        if (isLaunching) return;
-
-        seatedCount = seatedCount + 1;
-
-        if (seatedCount >= seatCapacity)
+        if (flying && Time.time > launchTime + flightDurationSeconds + 2f)
         {
-            isLaunching = true;
-            RequestSerialization();
-            SendCustomNetworkEvent(NetworkEventTarget.All, "LaunchRocket");
+            Log("was still marked in flight " + (Time.time - launchTime).ToString("0") + " s after launch; resetting it now");
+            ResetRoom();
         }
-        else
-        {
-            RequestSerialization();
-        }
+        return !flying;
     }
 
-    public void SomeoneStoodUp()
+    public void SeatFilled(int seatIndex)
     {
-        if (!Networking.IsOwner(gameObject)) return;
-        if (isLaunching) return;
+        ReadyToBoard();
+        Log("seat " + seatIndex + " filled" + (flying ? ", ignored: in flight" : "") + (seatIndex >= 0 && seatIndex < seatFilled.Length && seatFilled[seatIndex] ? ", ignored: already counted" : ""));
+        if (flying) return;
+        if (seatIndex < 0 || seatIndex >= seatFilled.Length) return;
+        if (seatFilled[seatIndex]) return;
 
-        seatedCount = seatedCount - 1;
-        if (seatedCount < 0) seatedCount = 0;
-        RequestSerialization();
+        seatFilled[seatIndex] = true;
+        seatedCount = CountFilled();
+        UpdateDisplay();
+        CheckFull();
+    }
+
+    public void SeatEmptied(int seatIndex)
+    {
+        if (flying) return;
+        if (seatIndex < 0 || seatIndex >= seatFilled.Length) return;
+        if (!seatFilled[seatIndex]) return;
+
+        seatFilled[seatIndex] = false;
+        seatedCount = CountFilled();
+        UpdateDisplay();
+    }
+
+    int CountFilled()
+    {
+        int n = 0;
+        for (int i = 0; i < seatFilled.Length; i++)
+        {
+            if (seatFilled[i]) n++;
+        }
+        return n;
+    }
+
+    void CheckFull()
+    {
+        if (flying) return;
+        if (CountFilled() < seatCapacity) return;
+
+        flying = true;
+        Log("all " + seatCapacity + " seats filled: launching");
+        LaunchRocket();
     }
 
     public void LaunchRocket()
     {
-        if (flying) return;
-        flying = true;
-
+        launchTime = Time.time;
         capacityDisplay.text = "In flight...";
 
-        for (int i = 0; i < seats.Length; i++)
-        {
-            seats[i].disableStationExit = true;
-        }
+        // The seats' disableStationExit is left alone (always on, see RocketSeat): changing it while someone is
+        // sitting makes VRChat throw them out, which is what emptied every rocket from its second trip on
 
         rocketAnimator.SetTrigger("Launch");
         engineAudioSource.PlayOneShot(launchSound);
@@ -145,38 +165,65 @@ public class RocketSystem : UdonSharpBehaviour
             Networking.LocalPlayer.PlayHapticEventInHand(VRC_Pickup.PickupHand.Left, 0.5f, 0.8f, 0.5f);
         }
 
+        // The landing shake and sounds start before the passengers step out, so they feel the landing
+        SendCustomEventDelayedSeconds("PlayLandingEffects", Mathf.Max(1f, flightDurationSeconds - LandingLead));
         SendCustomEventDelayedSeconds("ArriveHere", flightDurationSeconds - 3f);
-        SendCustomEventDelayedSeconds("PlayLandingEffects", flightDurationSeconds - 3f);
         SendCustomEventDelayedSeconds("ResetRoom", flightDurationSeconds);
     }
 
     public void ArriveHere()
     {
-        if (!localPlayerSeated) return;
-        if (localSeat == null) return;
+        if (!localPlayerSeated) { Log("arriving: you are not seated in this rocket, so you stay here"); return; }
+        if (localSeatIndex < 0 || localSeatIndex >= seats.Length) { Log("arriving: your seat number " + localSeatIndex + " is not in the seat list"); return; }
 
         int index = localSeatIndex;
-        if (index < 0 || index >= destinationPoints.Length)
-        {
-            index = 0;
-        }
-        teleportTarget = destinationPoints[index];
+        if (index >= destinationPoints.Length) index = 0;
+        Transform target = destinationPoints[index];
 
-        VRCStation mySeat = localSeat;
+        VRCStation mySeat = seats[localSeatIndex];
         LocalStoodUp();
 
-        mySeat.disableStationExit = false;
-        mySeat.ExitStation(Networking.LocalPlayer);
+        // Teleport only once VRChat has really let go of the seat (RocketSeat calls SeatLetGo), and a moment
+        // after that: teleporting while it is still letting go leaves the seat holding on to the player, and
+        // the next time they sit anywhere it pulls them back out. ArrivalTimeout covers a let-go that never reports
+        Log("arriving: leaving seat " + index + "; will teleport to " + target.name + " once the seat lets go");
+        arrivalTarget = target;
+        arrivalChecks = 4;
+        arrivalStarted = false;
+        SendCustomEventDelayedSeconds("ArrivalTimeout", 1f);
 
-        SendCustomEventDelayedSeconds("TeleportNow", 0.3f);
+        mySeat.ExitStation(Networking.LocalPlayer); // works even with disableStationExit on
     }
 
-    public void TeleportNow()
+    // Called by the seat when VRChat reports the local player has left it
+    public void SeatLetGo()
     {
-        if (teleportTarget == null) return;
+        if (arrivalTarget == null || arrivalStarted) return;
+        arrivalStarted = true;
+        Log("arriving: seat let go; teleporting to " + arrivalTarget.name);
+        SendCustomEventDelayedSeconds("CheckArrived", 0.25f);
+        SendCustomEventDelayedSeconds("CheckArrived", 0.6f);
+        SendCustomEventDelayedSeconds("CheckArrived", 1f);
+        SendCustomEventDelayedSeconds("CheckArrived", 1.5f);
+    }
 
-        Networking.LocalPlayer.TeleportTo(teleportTarget.position, teleportTarget.rotation);
-        teleportTarget = null;
+    public void ArrivalTimeout()
+    {
+        if (arrivalTarget == null || arrivalStarted) return;
+        Log("arriving: the seat never reported letting go; teleporting anyway");
+        SeatLetGo();
+    }
+
+    public void CheckArrived()
+    {
+        if (arrivalTarget == null) return;
+        VRCPlayerApi me = Networking.LocalPlayer;
+        if (Vector3.Distance(me.GetPosition(), arrivalTarget.position) > 1.5f)
+        {
+            me.TeleportTo(arrivalTarget.position, arrivalTarget.rotation);
+        }
+        arrivalChecks--;
+        if (arrivalChecks <= 0) arrivalTarget = null;
     }
 
     public void PlayLandingEffects()
@@ -186,7 +233,7 @@ public class RocketSystem : UdonSharpBehaviour
         engineAudioSource.PlayOneShot(landingSound);
         engineAudioSource.PlayOneShot(landingAnnouncementSound);
 
-        if (teleportTarget != null)
+        if (localPlayerSeated)
         {
             Networking.LocalPlayer.PlayHapticEventInHand(VRC_Pickup.PickupHand.Right, 0.5f, 1.0f, 0.5f);
         }
@@ -194,34 +241,40 @@ public class RocketSystem : UdonSharpBehaviour
 
     public void ResetRoom()
     {
+        Log("reset, ready to board");
         flying = false;
         localPlayerInRoom = false;
         engineAudioSource.Stop();
 
         for (int i = 0; i < seats.Length; i++)
         {
-            seats[i].disableStationExit = false;
+            seatFilled[i] = false;
         }
+        seatedCount = 0;
 
         if (Networking.IsOwner(gameObject))
         {
             roomOccupancy = 0;
-            seatedCount = 0;
-            isLaunching = false;
             RequestSerialization();
         }
 
         UpdateDisplay();
     }
 
+    void Log(string message)
+    {
+        string where = transform.parent != null ? transform.parent.name + "/" + name : name;
+        Debug.Log("[Rocket] " + where + ": " + message);
+    }
+
     private void UpdateDisplay()
     {
-        if (isLaunching)
+        if (flying)
         {
             capacityDisplay.text = "In flight...";
             return;
         }
-        capacityDisplay.text = roomOccupancy + " / " + seatCapacity + " players boarded";
+        capacityDisplay.text = CountFilled() + " / " + seatCapacity + " players boarded";
     }
 
     public override void OnDeserialization()

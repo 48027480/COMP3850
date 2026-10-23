@@ -7,7 +7,7 @@ using VRC.Udon;
 // anyone is near it, and stays shut while its rocket is in flight (launch until the room resets).
 // The swing is animated on the hinge rather than driven by physics, so it looks the same for every
 // player. Each client works it out locally from shared state (player positions and the rocket's
-// synced isLaunching), so no extra networking is needed.
+// its flying flag), so no extra networking is needed.
 // Set up by Tools > Set Up Rocket Doors.
 [UdonBehaviourSyncMode(BehaviourSyncMode.None)]
 public class RocketGate : UdonSharpBehaviour
@@ -55,7 +55,7 @@ public class RocketGate : UdonSharpBehaviour
             nextCheck = Time.time + checkInterval;
             if (SomeoneNear()) lastSeenNear = Time.time;
 
-            bool inFlight = rocket != null && rocket.isLaunching;
+            bool inFlight = rocket != null && rocket.flying;
             bool wantOpen = !inFlight && Time.time - lastSeenNear < closeDelay;
             target = wantOpen ? 1f : 0f;
         }
