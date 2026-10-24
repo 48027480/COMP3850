@@ -1,1 +1,10 @@
-{}
+{
+  "coins": {
+    "LastUpdated": "2026-10-24T21:08:00.0316002+11:00",
+    "Key": "coins",
+    "Value": {
+      "type": "Int",
+      "value": 0
+    }
+  }
+}
