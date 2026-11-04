@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: StarChartManager
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 20a498ca0f86e3748b019dea3f0ddd07,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: a2969631d9d882a498807bff2d18f9e5,
     type: 2}
   udonAssembly: 
   assemblyError: 

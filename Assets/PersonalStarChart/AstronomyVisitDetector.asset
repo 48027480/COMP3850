@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: AstronomyVisitDetector
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 68e2f588dcf17ae4f9f7b3a61d249fdd,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 82fec5e091e84b94b8fd1edd7b04ff18,
     type: 2}
   udonAssembly: 
   assemblyError: 
