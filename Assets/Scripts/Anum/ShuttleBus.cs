@@ -22,6 +22,17 @@ public class ShuttleBus : UdonSharpBehaviour
     public Vector3[] doorOpen;
     public float doorTime = 1.2f;
 
+    // Old two-stop setup. Buses placed before the multi-stop update still store
+    // their route this way in the scene, so Start() converts it when stops is empty.
+    [HideInInspector] public float stopA;
+    [HideInInspector] public float stopB;
+    [HideInInspector] public float dwellA = 30f;
+    [HideInInspector] public float dwellB = 20f;
+    [HideInInspector] public string nameA = "Plaza";
+    [HideInInspector] public string nameB = "Departures";
+    [HideInInspector] public TextMeshPro[] signsA;
+    [HideInInspector] public TextMeshPro[] signsB;
+
     float[] cum;
     float total;
     float period;
@@ -33,6 +44,8 @@ public class ShuttleBus : UdonSharpBehaviour
 
     void Start()
     {
+        if ((stops == null || stops.Length < 2) && stopB > stopA) UseLegacyStops();
+
         if (route == null || route.Length < 2 || stops == null || stops.Length < 2 || dwells == null || dwells.Length != stops.Length)
         {
             Debug.LogWarning("[ShuttleBus] " + gameObject.name + ": no route or stops set, the shuttle will not move. Run Tools > Add Earth Shuttle Buses again.");
@@ -53,6 +66,20 @@ public class ShuttleBus : UdonSharpBehaviour
         }
         period = t;
         Debug.Log("[ShuttleBus] " + transform.parent.name + " running: " + Mathf.RoundToInt(total) + " m loop, " + stops.Length + " stops, a round trip every " + Clock(period) + ".");
+    }
+
+    void UseLegacyStops()
+    {
+        stops = new float[] { stopA, stopB };
+        dwells = new float[] { dwellA, dwellB };
+        names = new string[] { nameA, nameB };
+
+        int countA = signsA != null ? signsA.Length : 0;
+        int countB = signsB != null ? signsB.Length : 0;
+        signs = new TextMeshPro[countA + countB];
+        signStop = new int[countA + countB];
+        for (int i = 0; i < countA; i++) { signs[i] = signsA[i]; signStop[i] = 0; }
+        for (int i = 0; i < countB; i++) { signs[countA + i] = signsB[i]; signStop[countA + i] = 1; }
     }
 
     float Gap(int i)

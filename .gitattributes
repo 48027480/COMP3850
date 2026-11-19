@@ -1,3 +1,24 @@
+# Unity saves its YAML files with LF. Keep them LF on checkout so Unity rewriting
+# them (e.g. recompiling UdonSharp on Play) doesn't show up as changes in git.
+# text=auto leaves any binary-serialized assets alone.
+*.asset text=auto eol=lf
+*.prefab text=auto eol=lf
+*.unity text=auto eol=lf
+*.meta text=auto eol=lf
+*.mat text=auto eol=lf
+*.anim text=auto eol=lf
+*.controller text=auto eol=lf
+*.overrideController text=auto eol=lf
+*.physicMaterial text=auto eol=lf
+*.mask text=auto eol=lf
+*.playable text=auto eol=lf
+*.lighting text=auto eol=lf
+*.spriteatlas text=auto eol=lf
+*.terrainlayer text=auto eol=lf
+*.preset text=auto eol=lf
+*.renderTexture text=auto eol=lf
+*.mixer text=auto eol=lf
+
 *.fbx filter=lfs diff=lfs merge=lfs -text
 *.obj filter=lfs diff=lfs merge=lfs -text
 *.blend filter=lfs diff=lfs merge=lfs -text
