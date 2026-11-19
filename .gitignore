@@ -108,6 +108,9 @@ InitTestScene*.unity*
 # VRChat / UdonSharp generated files (rebuilt on compile and when entering Play mode)
 /[Aa]ssets/SerializedUdonPrograms/
 /[Aa]ssets/SerializedUdonPrograms.meta
+# Same for the VRChat SDK's example scene, re-signed on every world build
+/Packages/com.vrchat.worlds/Samples/UdonExampleScene/SerializedUdonPrograms/
+/Packages/com.vrchat.worlds/Samples/UdonExampleScene/SerializedUdonPrograms.meta
 
 # VRChat ClientSim local persistence data (written during Play mode)
 /ClientSimStorage/
