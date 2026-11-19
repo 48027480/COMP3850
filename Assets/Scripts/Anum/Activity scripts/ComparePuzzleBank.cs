@@ -48,7 +48,7 @@ public class ComparePuzzleBank : UdonSharpBehaviour
         "The black hole at the centre of the galaxy M87.\nMass: about 6.5 billion Suns.\nDistance: about 55 million light-years.\nGas takes days to weeks to orbit it.",
         "It was found on 1 July 2025 by the ATLAS survey in Chile.\nIt is moving at about 58 km/s, faster than any object before it.\nHubble saw a dust plume on its sunward side and a hint of a tail.",
         "Used one JWST instrument, MIRI, on its own.\nReported a signal matching DMS or DMDS at 3 sigma.\nOn Earth, DMS is made mainly by marine microbes.",
-        "In 2025, Gemini North imaged a faint star inside Betelgeuse's outer atmosphere.\nIn 2026, nearly eight years of Hubble data showed a dense trail of gas behind it.\nThe trail shows up about every six years.",
+        "In 2025, Gemini North imaged a faint star inside Betelgeuse's outer atmosphere.\nIn 2026, nearly eight years of Hubble and ground-based data showed a dense trail of gas behind it.\nThe trail shows up about every six years.",
         "Very compact galaxies packed with stars, reddened by dust.\nThis was one of the first ideas when the dots were found.\nIt needs huge numbers of stars squeezed into a very small space."
     };
 

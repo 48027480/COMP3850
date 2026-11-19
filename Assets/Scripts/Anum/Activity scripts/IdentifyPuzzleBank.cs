@@ -101,7 +101,7 @@ public class IdentifyPuzzleBank : UdonSharpBehaviour
         "Which Saturn moon has geysers, and which has a thick atmosphere?",
         "Roman is in space, ALMA sees millimetre waves, and the ELT's mirror is 39 metres.",
         "Planck sees the oldest light, DESI uses galaxy clustering, and CCHP leans on red giants.",
-        "Helios 2 flew in the 1970s, BepiColombo is going to Mercury, and Solar Orbiter is ESA-led."
+        "Helios 2 flew in the 1970s, BepiColombo is a Mercury mission, and Solar Orbiter is ESA-led."
     };
 
     [TextArea(3, 6)]

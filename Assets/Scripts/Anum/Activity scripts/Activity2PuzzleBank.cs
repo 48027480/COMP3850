@@ -56,7 +56,7 @@ public class Activity2PuzzleBank : UdonSharpBehaviour
         "Because of a fire at the Tidbinbilla tracking station there was a forced change of plan to swap with Honeysuckle Creek, which will now follow the lunar module during the moonwalk.",
         "Buzz Aldrin turns on the lunar module’s TV camera while the Parkes radio telescope battles strong winds, outside of its safety limits.",
         "When Neil Armstrong steps onto the Moon. The pictures come through Honeysuckle Creek near Canberra which all of the world see.",
-        "About eight and a half minutes into the broadcast, the main detector at Parkes locks on and the NASA one switches to the Parkes pictures for the rest of the moonwalk.",
+        "About nine minutes (8 minutes 51 seconds) into the broadcast, the main detector at Parkes locks on and the NASA one switches to the Parkes pictures for the rest of the moonwalk.",
 
         "At Parkes astronomers time the exact moments a radio source called 3C 273 disappears behind the Moon and then reappears, pinning down its exact position.",
         "Maarten Schmidt takes a spectrum of a starlike object near that position at the Palomar 200 inch telescope.",
@@ -102,9 +102,9 @@ public class Activity2PuzzleBank : UdonSharpBehaviour
     [TextArea(3, 6)]
     public string[] correctText = new string[]
     {
-        "That is right! The Tidbinbilla fire changed the plan, Aldrin turned on the camera, Honeysuckle Creek carried the first step, and Parkes took over about eight and a half minutes in. The film The Dish shows Parkes broadcasting the first step, but that part is not quite true.",
+        "That is right! The Tidbinbilla fire changed the plan, Aldrin turned on the camera, Honeysuckle Creek carried the first step, and Parkes took over 8 minutes 51 seconds in. The film The Dish shows Parkes broadcasting the first step, but that part is not quite true.",
         "That is Correct! Parkes timed the Moon passing in front of 3C 273 in 1962, Schmidt took the spectrum, worked out the redshift on 5 February 1963, and the papers came out together that March.",
-        "Right! Hawking's 1974 idea led O'Sullivan's team to search for exploding black holes. They never found them, but their methods led to CSIRO's 1992 Australian patent on wireless networking and Radiata's first 802.11a chip.",
+        "Right! Hawking's 1974 idea led O'Sullivan's team to search for exploding black holes. They never found them, but their methods led to CSIRO's 1992 patent application for wireless networking and Radiata's first 802.11a chip.",
         "Correct! Parkes opened in 1961, the Compact Array in 1988, the Murchison observatory in 2012, and SKA-Low construction started in December 2022.",
         "Correct! Radar operators noticed noise at sunrise in early 1945, Pawsey's team linked it to sunspots later that year, Payne-Scott made the cliff top interferometer observations in early 1946, and by mid 1946 she and Pawsey had described aperture synthesis."
     };
@@ -112,9 +112,9 @@ public class Activity2PuzzleBank : UdonSharpBehaviour
     [TextArea(3, 6)]
     public string[] revealText = new string[]
     {
-        "The order: the fire at Tidbinbilla, Aldrin switching on the camera, the first step seen through Honeysuckle Creek, then Parkes taking over about eight and a half minutes in.",
+        "The order: the fire at Tidbinbilla, Aldrin switching on the camera, the first step seen through Honeysuckle Creek, then Parkes taking over 8 minutes 51 seconds in.",
         "The order: the Parkes occultation in 1962, Schmidt's spectrum at Palomar, the redshift on 5 February 1963, then the Nature papers in March 1963.",
-        "The order: Hawking's prediction in 1974, O'Sullivan's search for exploding black holes, CSIRO's Australian patent in 1992, then Radiata's first 802.11a chip.",
+        "The order: Hawking's prediction in 1974, O'Sullivan's search for exploding black holes, CSIRO's patent application in 1992, then Radiata's first 802.11a chip.",
         "The order: Parkes in 1961, the Compact Array in 1988, the Murchison observatory in 2012, then SKA-Low construction in 2022.",
         "The order: noise at sunrise on Norfolk Island in 1945, the Collaroy sunspot work later in 1945, the Dover Heights observations in early 1946, then aperture synthesis in mid 1946."
     };
