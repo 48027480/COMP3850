@@ -7,18 +7,15 @@ using TMPro;
 public class ShuttleBus : UdonSharpBehaviour
 {
     public Vector3[] route;
-    public float stopA;
-    public float stopB;
+    public float[] stops;
+    public float[] dwells;
+    public string[] names;
     public float speed = 7f;
-    public float dwellA = 30f;
-    public float dwellB = 20f;
     public int offsetMs = 0;
-    public string nameA = "Plaza";
-    public string nameB = "Departures";
     public TextMeshPro destinationSign;
     public TextMeshPro insideSign;
-    public TextMeshPro[] signsA;
-    public TextMeshPro[] signsB;
+    public TextMeshPro[] signs;
+    public int[] signStop;
     public BusSeat[] seats;
     public Transform[] doors;
     public Vector3[] doorClosed;
@@ -28,6 +25,7 @@ public class ShuttleBus : UdonSharpBehaviour
     float[] cum;
     float total;
     float period;
+    float[] arrive;
     int lastAt = -2;
     float signTimer;
     float doorT;
@@ -35,9 +33,9 @@ public class ShuttleBus : UdonSharpBehaviour
 
     void Start()
     {
-        if (route == null || route.Length < 2)
+        if (route == null || route.Length < 2 || stops == null || stops.Length < 2 || dwells == null || dwells.Length != stops.Length)
         {
-            Debug.LogWarning("[ShuttleBus] " + gameObject.name + ": no route set, the shuttle will not move. Run Tools > Add Earth Shuttle Buses again.");
+            Debug.LogWarning("[ShuttleBus] " + gameObject.name + ": no route or stops set, the shuttle will not move. Run Tools > Add Earth Shuttle Buses again.");
             return;
         }
         cum = new float[route.Length + 1];
@@ -45,8 +43,22 @@ public class ShuttleBus : UdonSharpBehaviour
         for (int i = 0; i < route.Length; i++)
             cum[i + 1] = cum[i] + Vector3.Distance(route[i], route[(i + 1) % route.Length]);
         total = cum[route.Length];
-        period = dwellA + dwellB + total / speed;
-        Debug.Log("[ShuttleBus] " + transform.parent.name + " running: " + Mathf.RoundToInt(total) + " m loop, a round trip every " + Clock(period) + ".");
+
+        arrive = new float[stops.Length];
+        float t = 0f;
+        for (int i = 0; i < stops.Length; i++)
+        {
+            arrive[i] = t;
+            t += dwells[i] + Gap(i) / speed;
+        }
+        period = t;
+        Debug.Log("[ShuttleBus] " + transform.parent.name + " running: " + Mathf.RoundToInt(total) + " m loop, " + stops.Length + " stops, a round trip every " + Clock(period) + ".");
+    }
+
+    float Gap(int i)
+    {
+        if (i + 1 < stops.Length) return stops[i + 1] - stops[i];
+        return total - stops[i] + stops[0];
     }
 
     float Now()
@@ -60,18 +72,30 @@ public class ShuttleBus : UdonSharpBehaviour
 
     void Update()
     {
-        if (cum == null || total <= 0f) return;
+        if (cum == null || total <= 0f || arrive == null) return;
         float t = Now();
-        float legAB = (stopB - stopA) / speed;
-        float tArriveB = dwellA + legAB;
 
+        int leg = stops.Length - 1;
+        for (int i = 0; i < stops.Length; i++)
+        {
+            if (t >= arrive[i]) leg = i;
+        }
+        float into = t - arrive[leg];
         float s;
         int at;
         float leaveIn = 0f;
-        if (t < dwellA) { s = stopA; at = 0; leaveIn = dwellA - t; }
-        else if (t < tArriveB) { s = stopA + (t - dwellA) * speed; at = -1; }
-        else if (t < tArriveB + dwellB) { s = stopB; at = 1; leaveIn = tArriveB + dwellB - t; }
-        else { s = stopB + (t - tArriveB - dwellB) * speed; at = -1; }
+        if (into < dwells[leg])
+        {
+            s = stops[leg];
+            at = leg;
+            leaveIn = dwells[leg] - into;
+        }
+        else
+        {
+            s = stops[leg] + (into - dwells[leg]) * speed;
+            at = -1;
+        }
+        int next = (leg + 1) % stops.Length;
 
         Vector3 here = Sample(s);
         Vector3 ahead = Sample(s + 2.5f) - Sample(s - 2.5f);
@@ -102,26 +126,30 @@ public class ShuttleBus : UdonSharpBehaviour
         if (signTimer <= 0f)
         {
             signTimer = 0.5f;
-            bool toB = at == 0 || (at == -1 && t < tArriveB);
-            string next = toB ? nameB : nameA;
-            if (destinationSign != null) destinationSign.text = "TO " + next.ToUpper();
+            if (destinationSign != null) destinationSign.text = "TO " + names[next].ToUpper();
             if (insideSign != null)
-                insideSign.text = at >= 0 ? "Departing in " + Clock(leaveIn) + "\nNext stop: " + next : "Next stop: " + next;
+                insideSign.text = at >= 0 ? "Departing in " + Clock(leaveIn) + "\nNext stop: " + names[next] : "Next stop: " + names[next];
 
-            string every = "Every " + Clock(period) + " min";
-            string a = at == 0 ? "Boarding now  ·  departs in " + Clock(leaveIn) : "Next shuttle in " + Clock(period - t);
-            float waitB = tArriveB - t;
-            if (waitB < 0f) waitB += period;
-            string b = at == 1 ? "Boarding now  ·  departs in " + Clock(leaveIn) : "Next shuttle in " + Clock(waitB);
-            SetAll(signsA, "<b>SHUTTLE TO " + nameB.ToUpper() + "</b>\n" + every + "\n<b>" + a + "</b>");
-            SetAll(signsB, "<b>SHUTTLE TO " + nameA.ToUpper() + "</b>\n" + every + "\n<b>" + b + "</b>");
+            if (signs != null && signStop != null)
+            {
+                string every = "Every " + Clock(period) + " min";
+                for (int i = 0; i < signs.Length; i++)
+                {
+                    if (signs[i] == null || i >= signStop.Length) continue;
+                    int k = signStop[i];
+                    string after = names[(k + 1) % names.Length];
+                    string line;
+                    if (at == k) line = "Boarding now  ·  departs in " + Clock(leaveIn);
+                    else
+                    {
+                        float wait = arrive[k] - t;
+                        if (wait < 0f) wait += period;
+                        line = "Next shuttle in " + Clock(wait);
+                    }
+                    signs[i].text = "<b>SHUTTLE · NEXT STOP " + after.ToUpper() + "</b>\n" + every + "\n<b>" + line + "</b>";
+                }
+            }
         }
-    }
-
-    void SetAll(TextMeshPro[] list, string text)
-    {
-        if (list == null) return;
-        for (int i = 0; i < list.Length; i++) if (list[i] != null) list[i].text = text;
     }
 
     Vector3 Sample(float s)

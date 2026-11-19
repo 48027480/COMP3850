@@ -6,4 +6,4 @@
 *.wav filter=lfs diff=lfs merge=lfs -text
 *.mp3 filter=lfs diff=lfs merge=lfs -text
 *.dll filter=lfs diff=lfs merge=lfs -text
-*.unity filter=lfs diff=lfs merge=lfs -text
+Assets/Scenes/World/New?Anum?with?Andy's?design.unity filter=lfs diff=lfs merge=lfs -text
