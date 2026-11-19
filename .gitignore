@@ -104,3 +104,14 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# VRChat / UdonSharp generated files (rebuilt on compile and when entering Play mode)
+/[Aa]ssets/SerializedUdonPrograms/
+/[Aa]ssets/SerializedUdonPrograms.meta
+
+# VRChat ClientSim local persistence data (written during Play mode)
+/ClientSimStorage/
+
+# Unity crash / merge leftovers
+*.orig
+*.orig.meta
